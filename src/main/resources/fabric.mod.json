@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "lifetools",
+  "version": "${version}",
+  "name": "Life Tools",
+  "description": "A collection of my Minecraft utility mods.",
+  "authors": ["Vasik96"],
+  "contact": {
+    "repo": ""
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/lifetools/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.lifetools.Fly",
+      "com.lifetools.Teleport",
+      "com.lifetools.Speed"
+    ]
+  },
+  "mixins": [
+    "lifetools.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
