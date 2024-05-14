@@ -20,7 +20,7 @@ public class Speed implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(ClientCommandManager.literal("speed")
-                .then(ClientCommandManager.argument("speed", FloatArgumentType.floatArg(1, 20))
+                .then(ClientCommandManager.argument("speed", FloatArgumentType.floatArg())
                         .executes(this::executeSpeed))
                 .then(ClientCommandManager.literal("reset")
                         .executes(this::resetSpeed))));
@@ -35,6 +35,13 @@ public class Speed implements ClientModInitializer {
 
     private int executeSpeed(CommandContext<FabricClientCommandSource> context) {
         float newSpeed = FloatArgumentType.getFloat(context, "speed");
+
+        if (newSpeed < 1 || newSpeed > 30) {
+            // Custom error message for out of range speed
+            context.getSource().sendError(Text.of("§8[§2LifeTools§8] §7Speed must be between §a1 §7and §a30"));
+            return 0;
+        }
+
         assert MinecraftClient.getInstance().player != null;
         System.out.println("New speed: " + newSpeed); // Check if the new speed value is correct
         // Scale the input speed to fit within the valid range (0.05 - 1.0)
@@ -44,7 +51,7 @@ public class Speed implements ClientModInitializer {
         // Set the player's movement speed attributes
         Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).setBaseValue(scaledSpeed);
 
-        MinecraftClient.getInstance().player.sendMessage(Text.of("§8[§2SpeedMod§8] §7Walking and swimming speed has been set to §a" + newSpeed), false);
+        MinecraftClient.getInstance().player.sendMessage(Text.of("§8[§2LifeTools§8] §7Walking and swimming speed has been set to §a" + newSpeed), false);
         speedChanged = true;
         return 1;
     }
@@ -52,7 +59,7 @@ public class Speed implements ClientModInitializer {
     private int resetSpeed(CommandContext<FabricClientCommandSource> context) {
         resetSpeedToDefault();
         assert MinecraftClient.getInstance().player != null;
-        MinecraftClient.getInstance().player.sendMessage(Text.of("§8[§2SpeedMod§8] §7Walking and swimming speed has been reset"), false);
+        MinecraftClient.getInstance().player.sendMessage(Text.of("§8[§2LifeTools§8] §7Walking and swimming speed has been reset"), false);
         return 1;
     }
 

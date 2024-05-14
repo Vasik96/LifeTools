@@ -49,10 +49,10 @@ public class Teleport implements ClientModInitializer {
                 teleportPlayer(player, totalDistance, x, y, z);
 
                 // Notify the player that they have teleported.
-                Text message = Text.of("§8[§2TeleportMod§8] §7Teleported§a " + player.getName().getString() + " §7forward §a" + totalDistance + " §7blocks");
+                Text message = Text.of("§8[§2LifeTools§8] §7Teleported§a " + player.getName().getString() + " §7forward §a" + totalDistance + " §7blocks");
                 context.getSource().sendFeedback(message);
             } else {
-                Text errorMessage = Text.of("§8[§2TeleportMod§8] §7Teleport distance must be between §a1 §7and §a8 §7blocks");
+                Text errorMessage = Text.of("§8[§2LifeTools§8] §7Teleport distance must be between §a1 §7and §a8 §7blocks");
                 context.getSource().sendError(errorMessage);
             }
 

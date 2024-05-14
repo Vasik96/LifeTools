@@ -62,14 +62,14 @@ public class Fly implements ClientModInitializer {
     }
     private int onFlySpeedCommand(int speed) {
         if (speed < 1 || speed > 30) {
-            String errorMessage = "§8[§2FlyMod§8] §7Fly speed can only be set from §a1 §7to §a30";
+            String errorMessage = "§8[§2LifeTools§8] §7Fly speed can only be set from §a1 §7to §a30";
             assert MinecraftClient.getInstance().player != null;
             MinecraftClient.getInstance().player.sendMessage(Text.of(errorMessage), false);
             return 0;
         }
 
         setFlyingSpeed(MinecraftClient.getInstance().player, speed);
-        String message = String.format("§8[§2FlyMod§8] §7Fly speed has been set to §a%d", speed);
+        String message = String.format("§8[§2LifeTools§8] §7Fly speed has been set to §a%d", speed);
         assert MinecraftClient.getInstance().player != null;
         MinecraftClient.getInstance().player.sendMessage(Text.of(message), false);
         return 1;
@@ -92,10 +92,10 @@ public class Fly implements ClientModInitializer {
             }
             player.sendAbilitiesUpdate();
 
-            String status = isFlying ? "§aenabled" : "§adisabled";
+            String status = isFlying ? "§aenabled" : "§cdisabled";
             String playerName = player.getName().getString();
 
-            String message = String.format("§8[§2FlyMod§8] §7Fly mode has been %s §7for §a%s", status, playerName);
+            String message = String.format("§8[§2LifeTools§8] §7Fly mode has been %s §7for §a%s", status, playerName);
 
             player.sendMessage(Text.of(message), false);
         }
