@@ -5,3 +5,4 @@ The following commands are added:
  - /tpmod <1-8> (teleports you to where are you looking, the value is how many blocks it will teleport you)
  - /speed <1-20> (changes the walking speed to the specified value)
  - /speed reset (to reset the walking speed)
+ - /nofall (to disable or enable fall damage)
