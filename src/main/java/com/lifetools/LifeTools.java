@@ -6,13 +6,21 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.text.Text;
 
+import java.util.Optional;
+
 public class LifeTools implements ClientModInitializer {
+
+    private static final String MOD_ID = "lifetools";
+    private String version;
 
     @Override
     public void onInitializeClient() {
+        this.version = getModVersion().orElse("unknown");
         ClientCommandRegistrationCallback.EVENT.register(this::registerCommands);
     }
 
@@ -25,7 +33,7 @@ public class LifeTools implements ClientModInitializer {
     }
 
     private int run(CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Text.literal("§8[§2LifeTools§8] §7Running LifeTools §a1.2"));
+        context.getSource().sendFeedback(Text.literal("§8[§2LifeTools§8] §7Running LifeTools §a" + version));
         context.getSource().sendFeedback(Text.literal("§8-------------------------------------------"));
         context.getSource().sendFeedback(Text.literal("§7Current commands:"));
         context.getSource().sendFeedback(Text.literal("   §8- §7/fly"));
@@ -34,7 +42,11 @@ public class LifeTools implements ClientModInitializer {
         context.getSource().sendFeedback(Text.literal("   §8- §7/speed §a<1-20>"));
         context.getSource().sendFeedback(Text.literal("   §8- §7/speed §2reset"));
         context.getSource().sendFeedback(Text.literal("§8-------------------------------------------"));
-        // Add more information or functionality as needed
         return 1;
+    }
+
+    private Optional<String> getModVersion() {
+        Optional<ModContainer> modContainer = FabricLoader.getInstance().getModContainer(LifeTools.MOD_ID);
+        return modContainer.map(container -> container.getMetadata().getVersion().getFriendlyString());
     }
 }
