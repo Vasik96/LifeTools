@@ -38,7 +38,7 @@ public class LifeTools implements ClientModInitializer {
         context.getSource().sendFeedback(Text.literal("§7Current commands:"));
         context.getSource().sendFeedback(Text.literal("   §8- §7/fly"));
         context.getSource().sendFeedback(Text.literal("   §8- §7/flyspeed §a<1-30>"));
-        context.getSource().sendFeedback(Text.literal("   §8- §7/tpmod §a<1-8>"));
+        context.getSource().sendFeedback(Text.literal("   §8- §7/tpmod §a<1-150>"));
         context.getSource().sendFeedback(Text.literal("   §8- §7/speed §a<1-20>"));
         context.getSource().sendFeedback(Text.literal("   §8- §7/speed §2reset"));
         context.getSource().sendFeedback(Text.literal("   §8- §7/nofall"));

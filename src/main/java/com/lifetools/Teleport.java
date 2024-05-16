@@ -42,35 +42,27 @@ public class Teleport implements ClientModInitializer {
             double y = -Math.sin(pitch);
             double z = Math.cos(yaw) * Math.cos(pitch);
 
-            // Ensure the distance is within the teleport limit (1-8 blocks)
-            int teleportLimit = 8;
+            // Ensure the distance is within the new teleport limit (1-150 blocks)
+            int teleportLimit = 150;
 
             if (totalDistance >= 1 && totalDistance <= teleportLimit) {
-                teleportPlayer(player, totalDistance, x, y, z);
+                // Use the TeleportPacket class to handle the teleportation steps
+                TeleportPacket.teleportInSteps(player, totalDistance, x, y, z);
 
                 // Notify the player that they have teleported.
                 Text message = Text.of("§8[§2LifeTools§8] §7Teleported§a " + player.getName().getString() + " §7forward §a" + totalDistance + " §7blocks");
                 context.getSource().sendFeedback(message);
             } else {
-                Text errorMessage = Text.of("§8[§2LifeTools§8] §7Teleport distance must be between §a1 §7and §a8 §7blocks");
+                Text errorMessage = Text.of("§8[§2LifeTools§8] §7Teleport distance must be between §a1 §7and §a150 §7blocks");
                 context.getSource().sendError(errorMessage);
             }
 
             return 1;
         } else {
             // Send an error message if the player is not in-game.
-            Text errorMessage = Text.of("§8[§2TeleportMod§8] §7Error teleporting, please try again");
+            Text errorMessage = Text.of("§8[§2LifeTools§8] §7Error teleporting, please try again");
             context.getSource().sendError(errorMessage);
             return 0;
         }
-    }
-
-    private void teleportPlayer(ClientPlayerEntity player, int distance, double x, double y, double z) {
-        double newX = player.getX() + x * distance;
-        double newY = player.getY() + y * distance;
-        double newZ = player.getZ() + z * distance;
-
-        // Set the player's position directly.
-        player.updatePosition(newX, newY, newZ);
     }
 }
