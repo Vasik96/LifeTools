@@ -82,7 +82,7 @@ public class BoatFly implements ClientModInitializer {
             if (client.options.jumpKey.isPressed()) {
                 boat.addVelocity(0, boatFlySpeed * 0.05, 0); // Fly up with reduced speed
             } else {
-                boat.addVelocity(0, 1.0, 0); // Faster glide effect
+                boat.addVelocity(0, 0.0000001, 0); // Faster glide effect
             }
             if (client.options.forwardKey.isPressed()) {
                 double horizontalSpeed = boatFlySpeed * 0.1; // Adjust horizontal speed based on boatFlySpeed
@@ -91,7 +91,7 @@ public class BoatFly implements ClientModInitializer {
             }
 
             // Apply slight drag for realism
-            boat.setVelocity(boat.getVelocity().multiply(0.98, -0.000000000000000001, 0.98)); //some stupid shit here
+            boat.setVelocity(boat.getVelocity().multiply(0.98, 1, 0.98)); //some stupid shit here
         }
     }
 
