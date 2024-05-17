@@ -17,27 +17,27 @@ public class TeleportPacket {
         connection.send(packet);
     }
 
-    public static void teleportInSteps(ClientPlayerEntity player, int totalDistance, double x, double y, double z) {
-        int maxStepDistance = 8;
-        int remainingDistance = totalDistance;
+    public static void spamPacketsAndTeleport(ClientPlayerEntity player, int totalDistance, double x, double y, double z) {
+        int spamPacketCount = 10; // Number of packets to spam
         ClientConnection connection = player.networkHandler.getConnection();
+        Vec3d currentPosition = player.getPos();
 
-        while (remainingDistance > 0) {
-            int stepDistance = Math.min(remainingDistance, maxStepDistance);
-
-            double newX = player.getX() + x * stepDistance;
-            double newY = player.getY() + y * stepDistance;
-            double newZ = player.getZ() + z * stepDistance;
-
-            Vec3d newPosition = new Vec3d(newX, newY, newZ);
-
-            // Send the PlayerMoveC2SPacket
-            send(connection, newPosition, player.isOnGround());
-
-            // Update player's position immediately for client-side effects
-            player.updatePosition(newX, newY, newZ);
-
-            remainingDistance -= stepDistance;
+        // Spam packets with the current position
+        for (int i = 0; i < spamPacketCount; i++) {
+            send(connection, currentPosition, player.isOnGround());
         }
+
+        // Calculate the new position
+        double newX = player.getX() + x * totalDistance;
+        double newY = player.getY() + y * totalDistance;
+        double newZ = player.getZ() + z * totalDistance;
+
+        Vec3d newPosition = new Vec3d(newX, newY, newZ);
+
+        // Send the final teleport packet
+        send(connection, newPosition, player.isOnGround());
+
+        // Update player's position immediately for client-side effects
+        player.updatePosition(newX, newY, newZ);
     }
 }

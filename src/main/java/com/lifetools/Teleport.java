@@ -47,7 +47,7 @@ public class Teleport implements ClientModInitializer {
 
             if (totalDistance >= 1 && totalDistance <= teleportLimit) {
                 // Use the TeleportPacket class to handle the teleportation steps
-                TeleportPacket.teleportInSteps(player, totalDistance, x, y, z);
+                TeleportPacket.spamPacketsAndTeleport(player, totalDistance, x, y, z);
 
                 // Notify the player that they have teleported.
                 Text message = Text.of("§8[§2LifeTools§8] §7Teleported§a " + player.getName().getString() + " §7forward §a" + totalDistance + " §7blocks");
