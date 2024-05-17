@@ -17,7 +17,8 @@
       "com.lifetools.Teleport",
       "com.lifetools.Speed",
       "com.lifetools.LifeTools",
-      "com.lifetools.NoFall"
+      "com.lifetools.NoFall",
+      "com.lifetools.BoatFly"
     ]
   },
   "mixins": [
