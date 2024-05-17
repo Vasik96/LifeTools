@@ -29,8 +29,10 @@ public class BoatFly implements ClientModInitializer {
                 registerCommands(dispatcher));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            handleBoatFly(client);
-            checkAntiFlyKick(client);
+            if (boatFlyEnabled) {
+                handleBoatFly(client);
+                checkAntiFlyKick(client);
+            }
         });
     }
 
@@ -78,23 +80,24 @@ public class BoatFly implements ClientModInitializer {
         ClientPlayerEntity player = client.player;
         if (player != null && player.getVehicle() instanceof BoatEntity boat) {
             if (client.options.jumpKey.isPressed()) {
-                boat.addVelocity(0, 0.05, 0); // Fly up
+                boat.addVelocity(0, boatFlySpeed * 0.05, 0); // Fly up with reduced speed
+            } else {
+                boat.addVelocity(0, 1.0, 0); // Faster glide effect
             }
             if (client.options.forwardKey.isPressed()) {
-                double horizontalSpeed = boatFlySpeed * 0.05;
-                double verticalSpeed = boatFlySpeed * 0.02; // Smaller vertical speed
+                double horizontalSpeed = boatFlySpeed * 0.1; // Adjust horizontal speed based on boatFlySpeed
                 Vec3d rotationVector = boat.getRotationVector().normalize();
-                boat.addVelocity(rotationVector.x * horizontalSpeed, verticalSpeed, rotationVector.z * horizontalSpeed); // Move forward with some vertical lift
+                boat.addVelocity(rotationVector.x * horizontalSpeed, 0, rotationVector.z * horizontalSpeed); // Move forward with speed
             }
 
             // Apply slight drag for realism
-            boat.setVelocity(boat.getVelocity().multiply(0.98, 1.0, 0.98));
+            boat.setVelocity(boat.getVelocity().multiply(0.98, -0.000000000000000001, 0.98)); //some stupid shit here
         }
     }
 
     private void checkAntiFlyKick(MinecraftClient client) {
         ClientPlayerEntity player = client.player;
-        if (player != null && player.getVehicle() instanceof BoatEntity boat && boatFlyEnabled) {
+        if (player != null && player.getVehicle() instanceof BoatEntity boat) {
             double currentY = boat.getPos().getY();
             if (currentY >= oldY - 0.0433D) {
                 floatingTickCount += 1;
