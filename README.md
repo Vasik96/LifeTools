@@ -6,3 +6,5 @@ The following commands are added:
  - /speed <1-20> (changes the walking speed to the specified value)
  - /speed reset (to reset the walking speed)
  - /nofall (to disable or enable fall damage)
+ - /boatfly (to enable or disable flying in a boat)
+ - /boatfly speed <1-10> (to change the speed of the boat fly)
