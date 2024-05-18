@@ -34,10 +34,10 @@ public class Xray implements ClientModInitializer {
 
         // Register key binding
         keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.xray.toggle",
+                "Toggle Xray",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_X,
-                "category.xray"
+                "Xray"
         ));
 
         // Register the client tick event to check for key press
