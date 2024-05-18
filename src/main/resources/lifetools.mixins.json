@@ -2,8 +2,9 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.lifetools.mixins",
-  "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "XrayMixin",
+    "FullbrightMixin"
   ],
   "client": [
   ],

@@ -18,7 +18,7 @@ public class TeleportPacket {
     }
 
     public static void spamPacketsAndTeleport(ClientPlayerEntity player, int totalDistance, double x, double y, double z) {
-        int spamPacketCount = 10; // Number of packets to spam
+        int spamPacketCount = 15; // Number of packets to spam
         ClientConnection connection = player.networkHandler.getConnection();
         Vec3d currentPosition = player.getPos();
 
