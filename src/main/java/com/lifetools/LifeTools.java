@@ -43,7 +43,9 @@ public class LifeTools implements ClientModInitializer {
         context.getSource().sendFeedback(Text.literal("   §8- §7/speed §2reset"));
         context.getSource().sendFeedback(Text.literal("   §8- §7/nofall"));
         context.getSource().sendFeedback(Text.literal("   §8- §7/boatfly"));
-        context.getSource().sendFeedback(Text.literal("   §8- §7/boatfly §2speed §a<1-10>"));
+        context.getSource().sendFeedback(Text.literal("   §8- §7/clienteffect give §2<effect> §a<1-255>"));
+        context.getSource().sendFeedback(Text.literal("   §8- §7/clienteffect clear §2<effect>"));
+        context.getSource().sendFeedback(Text.literal("   §8- §7/clienteffect clear"));
         context.getSource().sendFeedback(Text.literal("§8-------------------------------------------"));
         return 1;
     }
