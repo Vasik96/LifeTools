@@ -8,3 +8,5 @@ The following commands are added:
  - /nofall (to disable or enable fall damage)
  - /boatfly (to enable or disable flying in a boat)
  - /boatfly speed <1-10> (to change the speed of the boat fly)
+ - /clienteffect <effect> <1-255> (get any effect on any server, not all works)
+ - /clienteffect clear [optional: <effect>] (clears all or prefered effects)
