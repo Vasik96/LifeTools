@@ -31,7 +31,7 @@ public class Fly implements ClientModInitializer {
                 "Toggle Flying",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_G,
-                "Fly Mod"
+                "Fly"
         ));
 
         registerCommands();

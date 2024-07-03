@@ -51,7 +51,7 @@ public class Speed implements ClientModInitializer {
         // Set the player's movement speed attributes
         Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).setBaseValue(scaledSpeed);
 
-        MinecraftClient.getInstance().player.sendMessage(Text.of("§8[§2LifeTools§8] §7Walking and swimming speed has been set to §a" + newSpeed), false);
+        MinecraftClient.getInstance().player.sendMessage(Text.of("§8[§2LifeTools§8] §7Walking speed has been set to §a" + newSpeed), false);
         speedChanged = true;
         return 1;
     }

@@ -21,7 +21,8 @@
       "com.lifetools.LifeTools",
       "com.lifetools.NoFall",
       "com.lifetools.BoatFly",
-      "com.lifetools.ClientEffects"
+      "com.lifetools.ClientEffects",
+      "com.lifetools.Scaffold"
     ]
   },
   "mixins": [
