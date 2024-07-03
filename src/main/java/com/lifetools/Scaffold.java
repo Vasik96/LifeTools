@@ -22,7 +22,7 @@ import org.lwjgl.glfw.GLFW;
 public class Scaffold implements ClientModInitializer {
     private static KeyBinding toggleScaffoldKey;
     private boolean scaffoldEnabled = false;
-
+// a
     @Override
     public void onInitializeClient() {
         //keybind implementation
