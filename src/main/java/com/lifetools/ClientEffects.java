@@ -21,6 +21,8 @@ import net.minecraft.util.Identifier;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.lifetools.LifeTools.*;
+
 public class ClientEffects implements ClientModInitializer {
 
     private static final Map<String, RegistryEntry<StatusEffect>> EFFECT_MAP = new HashMap<>();
@@ -47,6 +49,7 @@ public class ClientEffects implements ClientModInitializer {
     private void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
         LiteralArgumentBuilder<FabricClientCommandSource> command = LiteralArgumentBuilder
                 .<FabricClientCommandSource>literal("clienteffect")
+                .executes(this::correctUsage)
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("clear")
                         .executes(this::clearEffects)
                         .then(com.mojang.brigadier.builder.RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("effect", StringArgumentType.string())
@@ -64,15 +67,25 @@ public class ClientEffects implements ClientModInitializer {
     private static final SuggestionProvider<FabricClientCommandSource> EFFECT_SUGGESTIONS = (context, builder) ->
             CommandSource.suggestMatching(EFFECT_MAP.keySet().stream(), builder);
 
+
+    private int correctUsage(CommandContext<FabricClientCommandSource> context) {
+        context.getSource().sendFeedback(Text.literal(INFO_PREFIX + "Correct usage:\n"
+                + "   §7/clienteffect give [effect] <value>\n"
+                + "   §7/clienteffect clear [effect]\n"
+                + "   §7/clienteffect clear"));
+        return 1;
+    }
+
+
     private int clearEffects(CommandContext<FabricClientCommandSource> context) {
         FabricClientCommandSource source = context.getSource();
         if (source.getPlayer() != null) {
             for (RegistryEntry<StatusEffect> entry : EFFECT_MAP.values()) {
                 source.getPlayer().removeStatusEffect(entry);
             }
-            source.sendFeedback(Text.literal("§8[§2LifeTools§8] §7All effects have been cleared"));
+            source.sendFeedback(Text.literal(INFO_PREFIX + "All effects have been cleared"));
         } else {
-            source.sendFeedback(Text.literal("§8[§2LifeTools§8] §7Command can only be run by a player"));
+            source.sendFeedback(Text.literal(ERROR_PREFIX + "§cAn Error occurred"));
         }
         return 1;
     }
@@ -84,12 +97,12 @@ public class ClientEffects implements ClientModInitializer {
             RegistryEntry<StatusEffect> entry = EFFECT_MAP.get(effectName);
             if (entry != null) {
                 source.getPlayer().removeStatusEffect(entry);
-                source.sendFeedback(Text.literal(String.format("§8[§2LifeTools§8] §7Effect §a%s §7has been cleared", formatEffectName(effectName))));
+                source.sendFeedback(Text.literal(String.format(INFO_PREFIX + "Effect §a%s §7has been cleared", formatEffectName(effectName))));
             } else {
-                source.sendFeedback(Text.literal("§8[§2LifeTools§8] §7Invalid effect name or error"));
+                source.sendFeedback(Text.literal(WARNING_PREFIX + "§6Invalid effect name"));
             }
         } else {
-            source.sendFeedback(Text.literal("§8[§2LifeTools§8] §7Error"));
+            source.sendFeedback(Text.literal(ERROR_PREFIX + "§cAn Error occurred"));
         }
         return 1;
     }
@@ -106,12 +119,12 @@ public class ClientEffects implements ClientModInitializer {
 
                 int amplifier = (value - 1) / 2;
                 source.getPlayer().addStatusEffect(new StatusEffectInstance(entry, 600, amplifier));
-                source.sendFeedback(Text.literal(String.format("§8[§2LifeTools§8] §7Effect §a%s §7has been set to §2%s§7", formatEffectName(effectName), value)));
+                source.sendFeedback(Text.literal(String.format(INFO_PREFIX + "Effect §a%s §7has been set to §2%s§7", formatEffectName(effectName), value)));
             } else {
-                source.sendFeedback(Text.literal("§8[§2LifeTools§8] §7Invalid effect name or error"));
+                source.sendFeedback(Text.literal(WARNING_PREFIX + "§6Invalid effect name"));
             }
         } else {
-            source.sendFeedback(Text.literal("§8[§2LifeTools§8] §7Error"));
+            source.sendFeedback(Text.literal(ERROR_PREFIX + "§cAn Error occurred"));
         }
         return 1;
     }

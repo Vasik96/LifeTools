@@ -13,6 +13,9 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 
 import java.util.Objects;
 
+import static com.lifetools.LifeTools.INFO_PREFIX;
+import static com.lifetools.LifeTools.WARNING_PREFIX;
+
 public class Speed implements ClientModInitializer {
     private float scaledSpeed = 0.1f; // Default speed
     private boolean speedChanged = false; // Flag to check if speed was changed
@@ -38,20 +41,17 @@ public class Speed implements ClientModInitializer {
 
         if (newSpeed < 1 || newSpeed > 30) {
             // Custom error message for out of range speed
-            context.getSource().sendError(Text.of("§8[§2LifeTools§8] §7Speed must be between §a1 §7and §a30"));
+            context.getSource().sendError(Text.of(WARNING_PREFIX + "§6Speed must be between §a1 §6and §a30"));
             return 0;
         }
 
         assert MinecraftClient.getInstance().player != null;
-        System.out.println("New speed: " + newSpeed); // Check if the new speed value is correct
-        // Scale the input speed to fit within the valid range (0.05 - 1.0)
         scaledSpeed = newSpeed / 20.0f * 0.95f + 0.05f;
-        System.out.println("Scaled speed: " + scaledSpeed); // Check if the scaled speed value is correct
 
         // Set the player's movement speed attributes
         Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).setBaseValue(scaledSpeed);
 
-        MinecraftClient.getInstance().player.sendMessage(Text.of("§8[§2LifeTools§8] §7Walking speed has been set to §a" + newSpeed), false);
+        MinecraftClient.getInstance().player.sendMessage(Text.of(INFO_PREFIX + "Walking speed has been set to §a" + newSpeed), false);
         speedChanged = true;
         return 1;
     }
@@ -59,7 +59,7 @@ public class Speed implements ClientModInitializer {
     private int resetSpeed(CommandContext<FabricClientCommandSource> context) {
         resetSpeedToDefault();
         assert MinecraftClient.getInstance().player != null;
-        MinecraftClient.getInstance().player.sendMessage(Text.of("§8[§2LifeTools§8] §7Walking and swimming speed has been reset"), false);
+        MinecraftClient.getInstance().player.sendMessage(Text.of(INFO_PREFIX + "Walking speed has been reset"), false);
         return 1;
     }
 

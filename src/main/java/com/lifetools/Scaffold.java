@@ -19,10 +19,11 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.glfw.GLFW;
 
+import static com.lifetools.LifeTools.INFO_PREFIX;
+
 public class Scaffold implements ClientModInitializer {
     private static KeyBinding toggleScaffoldKey;
     private boolean scaffoldEnabled = false;
-// a
     @Override
     public void onInitializeClient() {
         //keybind implementation
@@ -37,16 +38,16 @@ public class Scaffold implements ClientModInitializer {
             if (client.player == null) return;
             if (toggleScaffoldKey.wasPressed()) {
                 scaffoldEnabled = !scaffoldEnabled;
-                client.player.sendMessage(Text.of("§8[§2Scaffold§8] §7Scaffold has been " + (scaffoldEnabled ? "§aenabled" : "§cdisabled")), false);
+                client.player.sendMessage(Text.of(INFO_PREFIX + "Scaffold has been " + (scaffoldEnabled ? "§aenabled" : "§cdisabled")), false);
             }
 
             if (scaffoldEnabled) {
-                implementScaffoldLogic(client);
+                ScaffoldLogic(client);
             }
         });
     }
 
-    private void implementScaffoldLogic(MinecraftClient client) {
+    private void ScaffoldLogic(MinecraftClient client) {
         ClientPlayerEntity player = client.player;
         if (player != null) {
             BlockPos belowPos = player.getBlockPos().down();

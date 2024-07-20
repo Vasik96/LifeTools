@@ -12,6 +12,8 @@ import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 
+import static com.lifetools.LifeTools.INFO_PREFIX;
+
 public class NoFall implements ClientModInitializer {
 
     private static boolean noFallEnabled = false;
@@ -36,7 +38,7 @@ public class NoFall implements ClientModInitializer {
 
     private void toggleNoFall() {
         noFallEnabled = !noFallEnabled;
-        String message = noFallEnabled ? "§8[§2LifeTools§8] §7Fall Damage has been §cdisabled" : "§8[§2LifeTools§8] §7Fall Damage has been §aenabled";
+        String message = noFallEnabled ? INFO_PREFIX + "Fall Damage has been §cdisabled" : INFO_PREFIX + "Fall Damage has been §aenabled";
         assert MinecraftClient.getInstance().player != null;
         MinecraftClient.getInstance().player.sendMessage(Text.of(message), false);
     }

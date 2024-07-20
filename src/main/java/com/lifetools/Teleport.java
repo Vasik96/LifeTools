@@ -10,6 +10,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.Text;
 
+import static com.lifetools.LifeTools.*;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
 public class Teleport implements ClientModInitializer {
@@ -22,9 +23,17 @@ public class Teleport implements ClientModInitializer {
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(
                 literal("tpmod")
+                        .executes(this::correctUsage)
                         .then(ClientCommandManager.argument("distance", IntegerArgumentType.integer())
                                 .executes(this::onTpmodCommand))
         ));
+    }
+
+
+    private int correctUsage(CommandContext<FabricClientCommandSource> context) {
+        context.getSource().sendFeedback(Text.literal(INFO_PREFIX + "Correct usage:\n"
+                + "   §7/tpmod <value>"));
+        return 1;
     }
 
     private int onTpmodCommand(CommandContext<FabricClientCommandSource> context) {
@@ -50,17 +59,17 @@ public class Teleport implements ClientModInitializer {
                 TeleportPacket.spamPacketsAndTeleport(player, totalDistance, x, y, z);
 
                 // Notify the player that they have teleported.
-                Text message = Text.of("§8[§2LifeTools§8] §7Teleported§a " + player.getName().getString() + " §7forward §a" + totalDistance + " §7blocks");
+                Text message = Text.of(INFO_PREFIX + "Teleported§a " + player.getName().getString() + " §7forward §a" + totalDistance + " §7blocks");
                 context.getSource().sendFeedback(message);
             } else {
-                Text errorMessage = Text.of("§8[§2LifeTools§8] §7Teleport distance must be between §a1 §7and §a150 §7blocks");
+                Text errorMessage = Text.of(WARNING_PREFIX + "§6Teleport distance must be between §a1 §6and §a150 §6blocks");
                 context.getSource().sendError(errorMessage);
             }
 
             return 1;
         } else {
             // Send an error message if the player is not in-game.
-            Text errorMessage = Text.of("§8[§2LifeTools§8] §7Error teleporting, please try again");
+            Text errorMessage = Text.of(ERROR_PREFIX + "§cError teleporting, please try again");
             context.getSource().sendError(errorMessage);
             return 0;
         }

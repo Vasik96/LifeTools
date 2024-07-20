@@ -16,6 +16,9 @@ import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 
+import static com.lifetools.LifeTools.INFO_PREFIX;
+import static com.lifetools.LifeTools.WARNING_PREFIX;
+
 public class BoatFly implements ClientModInitializer {
 
     private boolean boatFlyEnabled = false;
@@ -59,12 +62,12 @@ public class BoatFly implements ClientModInitializer {
         String status = boatFlyEnabled ? "§aenabled" : "§cdisabled";
         assert MinecraftClient.getInstance().player != null;
         MinecraftClient.getInstance().player.sendMessage(
-                Text.of("§8[§2LifeTools§8] §7Boat Fly has been " + status), false);
+                Text.of(INFO_PREFIX + "Boat Fly has been " + status), false);
     }
 
     private int setBoatFlySpeed(CommandContext<FabricClientCommandSource> context, int speed) {
         if (speed < 1 || speed > 10) {
-            String errorMessage = "§8[§2LifeTools§8] §7Boat Fly speed can only be set from §a1 §7to §a10";
+            String errorMessage = WARNING_PREFIX + "§6Boat Fly speed can only be set from §a1 §6to §a10";
             context.getSource().sendFeedback(Text.of(errorMessage));
             return 0; // Return 0 to indicate failure
         }
@@ -72,7 +75,7 @@ public class BoatFly implements ClientModInitializer {
         boatFlySpeed = speed;
         assert MinecraftClient.getInstance().player != null;
         MinecraftClient.getInstance().player.sendMessage(
-                Text.of(String.format("§8[§2LifeTools§8] §7Boat Fly speed has been set to §a%d", speed)), false);
+                Text.of(String.format(INFO_PREFIX + "Boat Fly speed has been set to §a%d", speed)), false);
         return 1; // Return 1 to indicate success
     }
 
