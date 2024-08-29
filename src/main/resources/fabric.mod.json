@@ -26,7 +26,8 @@
       "com.lifetools.Reach",
       "com.lifetools.KillAura",
       "com.lifetools.Jesus",
-      "com.lifetools.ESP"
+      "com.lifetools.ESP",
+      "com.lifetools.util.Utility"
     ]
   },
   "mixins": [

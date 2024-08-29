@@ -48,10 +48,10 @@ public class ESP implements ClientModInitializer {
         Text message;
         if (isEspEnabled) {
             disableEspEffect();
-            message = Text.literal(INFO_PREFIX + "ESP has been disabled");
+            message = Text.literal(INFO_PREFIX + "ESP has been §cdisabled");
         } else {
             enableEspEffect();
-            message = Text.literal(INFO_PREFIX + "ESP has been enabled");
+            message = Text.literal(INFO_PREFIX + "ESP has been §aenabled");
         }
 
         context.getSource().sendFeedback(message);
