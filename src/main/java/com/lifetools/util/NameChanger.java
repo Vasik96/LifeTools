@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.lifetools.LifeTools.ERROR_PREFIX;
 import static com.lifetools.LifeTools.INFO_PREFIX;
 
 public class NameChanger {
@@ -19,7 +20,7 @@ public class NameChanger {
 
     public void changeName(FabricClientCommandSource source, String newName) {
         if (newName.length() < MIN_NAME_LENGTH || newName.length() > MAX_NAME_LENGTH) {
-            source.sendError(Text.literal("§cError: Nickname must be between " + MIN_NAME_LENGTH + " and " + MAX_NAME_LENGTH + " characters."));
+            source.sendError(Text.literal(ERROR_PREFIX + "Nickname must be between " + MIN_NAME_LENGTH + " and " + MAX_NAME_LENGTH + " characters."));
             return;
         }
 
@@ -31,7 +32,7 @@ public class NameChanger {
                 // Find the field using reflection
                 Field sessionField = getSessionField();
                 if (sessionField == null) {
-                    source.sendError(Text.literal("Failed to access session field."));
+                    source.sendError(Text.literal(ERROR_PREFIX + "Failed to access session field."));
                     return;
                 }
 
@@ -58,7 +59,7 @@ public class NameChanger {
 
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
-                source.sendError(Text.literal("Failed to change nickname."));
+                source.sendError(Text.literal(ERROR_PREFIX + "Failed to change nickname."));
             }
         }
     }
