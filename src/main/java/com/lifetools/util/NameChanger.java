@@ -10,7 +10,6 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.lifetools.LifeTools.ERROR_PREFIX;
 import static com.lifetools.LifeTools.INFO_PREFIX;
 
 public class NameChanger {
@@ -20,7 +19,7 @@ public class NameChanger {
 
     public void changeName(FabricClientCommandSource source, String newName) {
         if (newName.length() < MIN_NAME_LENGTH || newName.length() > MAX_NAME_LENGTH) {
-            source.sendError(Text.literal(ERROR_PREFIX + "Nickname must be between " + MIN_NAME_LENGTH + " and " + MAX_NAME_LENGTH + " characters"));
+            source.sendError(Text.literal("§cError: Nickname must be between " + MIN_NAME_LENGTH + " and " + MAX_NAME_LENGTH + " characters."));
             return;
         }
 
@@ -29,9 +28,12 @@ public class NameChanger {
 
         if (player != null) {
             try {
-                // Access the private session field and change the username
-                Field sessionField = MinecraftClient.class.getDeclaredField("session");
-                sessionField.setAccessible(true);
+                // Find the field using reflection
+                Field sessionField = getSessionField();
+                if (sessionField == null) {
+                    source.sendError(Text.literal("Failed to access session field."));
+                    return;
+                }
 
                 Session session = (Session) sessionField.get(client);
 
@@ -40,8 +42,8 @@ public class NameChanger {
                         newName,
                         UUID.randomUUID(), // Generate a new UUID for the new session
                         session.getAccessToken(),
-                        Optional.of(String.valueOf(session.getClientId())),
-                        Optional.of(String.valueOf(session.getXuid())),
+                        Optional.of(session.getClientId().toString()), // Ensure correct data type conversion
+                        Optional.of(session.getXuid().toString()),    // Ensure correct data type conversion
                         session.getAccountType()
                 );
 
@@ -54,10 +56,21 @@ public class NameChanger {
                 Disconnect.reason = "Your nickname has been changed successfully";
                 new Disconnect().handleDisconnect(source);
 
-            } catch (NoSuchFieldException | IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 e.printStackTrace();
-                source.sendError(Text.literal(ERROR_PREFIX + "Failed to change nickname"));
+                source.sendError(Text.literal("Failed to change nickname."));
             }
         }
+    }
+
+    private Field getSessionField() {
+        // Attempt to find the session field
+        for (Field field : MinecraftClient.class.getDeclaredFields()) {
+            if (field.getType().equals(Session.class)) {
+                field.setAccessible(true);
+                return field;
+            }
+        }
+        return null; // Field not found
     }
 }
