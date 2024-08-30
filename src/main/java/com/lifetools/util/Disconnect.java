@@ -10,16 +10,20 @@ public class Disconnect {
 
     private static final MinecraftClient client = MinecraftClient.getInstance();
 
+    // Static string to store the reason for disconnecting
+    public static String reason = "Manual command";
+
     public void handleDisconnect(FabricClientCommandSource source) {
-        // Custom disconnect message
         String customDisconnectMessage = """
                 §8■ ■ ■ ■ ■ ■ ■ ■  §cDisconnected  §8■ ■ ■ ■ ■ ■ ■
 
-                §7Reason: §cManual command
-                 
+                §7Reason: §c""" + reason + """
+                
+                
                 §8■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■
                 """;
 
         Objects.requireNonNull(client.getNetworkHandler()).getConnection().disconnect(Text.literal(customDisconnectMessage));
+        reason = "Manual command";
     }
 }
