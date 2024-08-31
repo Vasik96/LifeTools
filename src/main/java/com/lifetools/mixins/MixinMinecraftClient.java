@@ -17,6 +17,4 @@ public class MixinMinecraftClient {
             ci.cancel();
         }
     }
-
-    // No need for a constructor in this context
 }

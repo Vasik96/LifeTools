@@ -2,47 +2,51 @@ package com.lifetools.util;
 
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.client.option.GameOptions;
 import net.minecraft.text.Text;
 
+import static com.lifetools.LifeTools.ERROR_PREFIX;
 import static com.lifetools.LifeTools.INFO_PREFIX;
 
 public class Fullbright {
 
     public static boolean isFullbright = false;
+    private double originalGamma = 1.0; // Default gamma value in Minecraft
 
     public void toggleFullbright(FabricClientCommandSource source) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.player == null) {
-            source.sendFeedback(Text.literal(INFO_PREFIX + "Error: Minecraft client or player not available."));
+            source.sendFeedback(Text.literal(ERROR_PREFIX + "Minecraft client or player not available."));
+            return;
+        }
+
+        GameOptions options = client.options;
+        if (options == null) {
+            source.sendFeedback(Text.literal(ERROR_PREFIX + "Game options not available."));
             return;
         }
 
         // Toggle fullbright mode
         isFullbright = !isFullbright;
 
-        // Apply or remove night vision based on the fullbright state
         if (isFullbright) {
-            applyNightVision(client);
+            // Store the original gamma value
+            originalGamma = options.getGamma().getValue();
+
+            // Set gamma to a very high value for fullbright
+            setGamma(client, 10000.0);
             source.sendFeedback(Text.literal(INFO_PREFIX + "Fullbright has been §aenabled"));
         } else {
-            removeNightVision(client);
+            // Restore the original gamma value
+            setGamma(client, originalGamma);
             source.sendFeedback(Text.literal(INFO_PREFIX + "Fullbright has been §cdisabled"));
         }
     }
 
-    private void applyNightVision(MinecraftClient client) {
-        if (client.player != null) {
-            // Apply night vision effect
-            client.player.addStatusEffect(new StatusEffectInstance(StatusEffects.NIGHT_VISION, StatusEffectInstance.INFINITE, 0, false, false, false));
-        }
-    }
-
-    private void removeNightVision(MinecraftClient client) {
-        if (client.player != null) {
-            // Remove night vision effect
-            client.player.removeStatusEffect(StatusEffects.NIGHT_VISION);
+    private void setGamma(MinecraftClient client, double gammaValue) {
+        GameOptions options = client.options;
+        if (options != null) {
+            options.getGamma().setValue(gammaValue);
         }
     }
 }

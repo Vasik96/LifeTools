@@ -5,16 +5,11 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
-import net.minecraft.client.util.InputUtil;
 
 import static com.lifetools.LifeTools.INFO_PREFIX;
-import static com.lifetools.util.Fullbright.isFullbright;
 
 public class Xray implements ClientModInitializer {
     public static final KeyBinding TOGGLE_XRAY_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
@@ -23,8 +18,6 @@ public class Xray implements ClientModInitializer {
             GLFW.GLFW_KEY_X,
             "X-Ray"
     ));
-
-    private static final RegistryEntry<StatusEffect> NIGHT_VISION_EFFECT = StatusEffects.NIGHT_VISION;
 
     @Override
     public void onInitializeClient() {
@@ -48,31 +41,8 @@ public class Xray implements ClientModInitializer {
                     false
             );
 
-            // Apply or remove the night vision effect
-            if (XrayConfig.ENABLED) {
-                applyNightVision(client);
-            } else {
-                removeNightVision(client);
-            }
-
             // Reload chunks to apply X-ray effect
             client.worldRenderer.reload();
-        }
-    }
-
-    private static void applyNightVision(MinecraftClient client) {
-        if (client.player != null) {
-            // Apply night vision effect until xray is disabled
-            client.player.addStatusEffect(new StatusEffectInstance(NIGHT_VISION_EFFECT, StatusEffectInstance.INFINITE, 0, false, false, false));
-        }
-    }
-
-    private static void removeNightVision(MinecraftClient client) {
-        if (client.player != null) {
-            if (!isFullbright) {
-                // Remove the night vision effect
-                client.player.removeStatusEffect(NIGHT_VISION_EFFECT);
-            }
         }
     }
 }
