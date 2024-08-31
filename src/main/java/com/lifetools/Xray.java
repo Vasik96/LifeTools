@@ -11,25 +11,23 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
+import net.minecraft.client.util.InputUtil;
 
 import static com.lifetools.LifeTools.INFO_PREFIX;
 import static com.lifetools.util.Fullbright.isFullbright;
 
 public class Xray implements ClientModInitializer {
-    public static final String MOD_ID = "xraymod";
-    public static final KeyBinding TOGGLE_XRAY_KEY = new KeyBinding(
-            "key.xraymod.toggle",
+    public static final KeyBinding TOGGLE_XRAY_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "Toggle X-Ray",
+            InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_X,
-            "category.xraymod"
-    );
+            "X-Ray"
+    ));
 
     private static final RegistryEntry<StatusEffect> NIGHT_VISION_EFFECT = StatusEffects.NIGHT_VISION;
 
     @Override
     public void onInitializeClient() {
-        // Register the keybinding
-        KeyBindingHelper.registerKeyBinding(TOGGLE_XRAY_KEY);
-
         // Register a tick event listener to handle key press
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (TOGGLE_XRAY_KEY.wasPressed()) {
@@ -49,7 +47,6 @@ public class Xray implements ClientModInitializer {
                     Text.of(INFO_PREFIX + "X-ray has been " + (XrayConfig.ENABLED ? "§aenabled" : "§cdisabled")),
                     false
             );
-
 
             // Apply or remove the night vision effect
             if (XrayConfig.ENABLED) {
