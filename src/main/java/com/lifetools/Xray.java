@@ -13,6 +13,7 @@ import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 import static com.lifetools.LifeTools.INFO_PREFIX;
+import static com.lifetools.util.Fullbright.isFullbright;
 
 public class Xray implements ClientModInitializer {
     public static final String MOD_ID = "xraymod";
@@ -71,8 +72,10 @@ public class Xray implements ClientModInitializer {
 
     private static void removeNightVision(MinecraftClient client) {
         if (client.player != null) {
-            // Remove the night vision effect
-            client.player.removeStatusEffect(NIGHT_VISION_EFFECT);
+            if (!isFullbright) {
+                // Remove the night vision effect
+                client.player.removeStatusEffect(NIGHT_VISION_EFFECT);
+            }
         }
     }
 }

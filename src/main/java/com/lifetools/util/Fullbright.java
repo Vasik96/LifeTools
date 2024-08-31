@@ -10,7 +10,7 @@ import static com.lifetools.LifeTools.INFO_PREFIX;
 
 public class Fullbright {
 
-    private static boolean isFullbright = false;
+    public static boolean isFullbright = false;
 
     public void toggleFullbright(FabricClientCommandSource source) {
         MinecraftClient client = MinecraftClient.getInstance();
