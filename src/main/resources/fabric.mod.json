@@ -27,7 +27,8 @@
       "com.lifetools.KillAura",
       "com.lifetools.Jesus",
       "com.lifetools.ESP",
-      "com.lifetools.util.Utility"
+      "com.lifetools.util.Utility",
+      "com.lifetools.Xray"
     ]
   },
   "mixins": [

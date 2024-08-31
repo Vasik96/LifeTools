@@ -2,7 +2,8 @@ package com.lifetools.util;
 
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.GameOptions;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.text.Text;
 
 import static com.lifetools.LifeTools.INFO_PREFIX;
@@ -10,27 +11,38 @@ import static com.lifetools.LifeTools.INFO_PREFIX;
 public class Fullbright {
 
     private static boolean isFullbright = false;
-    private static final double FULLBRIGHT_VALUE = 100.0;
-    private static final double NORMAL_VALUE = 1.0;
 
     public void toggleFullbright(FabricClientCommandSource source) {
         MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null || client.options == null) {
-            source.sendFeedback(Text.literal(INFO_PREFIX + "Error: Minecraft client or options not available."));
+        if (client == null || client.player == null) {
+            source.sendFeedback(Text.literal(INFO_PREFIX + "Error: Minecraft client or player not available."));
             return;
         }
-
-        GameOptions options = client.options;
 
         // Toggle fullbright mode
         isFullbright = !isFullbright;
 
-        // Adjust gamma value
-        double newGammaValue = isFullbright ? FULLBRIGHT_VALUE : NORMAL_VALUE;
-        options.getGamma().setValue(newGammaValue);
+        // Apply or remove night vision based on the fullbright state
+        if (isFullbright) {
+            applyNightVision(client);
+            source.sendFeedback(Text.literal(INFO_PREFIX + "Fullbright has been §aenabled"));
+        } else {
+            removeNightVision(client);
+            source.sendFeedback(Text.literal(INFO_PREFIX + "Fullbright has been §cdisabled"));
+        }
+    }
 
-        // Notify user of the status change
-        String status = isFullbright ? "§aenabled" : "§cdisabled";
-        source.sendFeedback(Text.literal(INFO_PREFIX + "Fullbright has been " + status));
+    private void applyNightVision(MinecraftClient client) {
+        if (client.player != null) {
+            // Apply night vision effect
+            client.player.addStatusEffect(new StatusEffectInstance(StatusEffects.NIGHT_VISION, StatusEffectInstance.INFINITE, 0, false, false, false));
+        }
+    }
+
+    private void removeNightVision(MinecraftClient client) {
+        if (client.player != null) {
+            // Remove night vision effect
+            client.player.removeStatusEffect(StatusEffects.NIGHT_VISION);
+        }
     }
 }

@@ -3,10 +3,14 @@
   "minVersion": "0.8",
   "package": "com.lifetools.mixins",
   "mixins": [
-    "LivingEntityMixin"
+    "LivingEntityMixin",
+    "MixinBlock",
+    "MixinBlockOcclusionCache"
   ],
   "client": [
-    "DoubleSliderCallbacksMixin"
+    "DoubleSliderCallbacksMixin",
+    "MixinLightmapTextureManager",
+    "MixinMinecraftClient"
   ],
   "injectors": {
     "defaultRequire": 1
