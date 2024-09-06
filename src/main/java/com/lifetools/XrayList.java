@@ -61,6 +61,7 @@ public class XrayList {
         XRAY_BLOCKS.add(Blocks.SHULKER_BOX);
         XRAY_BLOCKS.add(Blocks.ANCIENT_DEBRIS);
 
+
         XRAY_BLOCKS.add(Blocks.COAL_BLOCK);
         XRAY_BLOCKS.add(Blocks.COPPER_BLOCK);
         XRAY_BLOCKS.add(Blocks.IRON_BLOCK);
@@ -70,6 +71,11 @@ public class XrayList {
         XRAY_BLOCKS.add(Blocks.NETHERITE_BLOCK);
         XRAY_BLOCKS.add(Blocks.LAPIS_BLOCK);
         XRAY_BLOCKS.add(Blocks.REDSTONE_BLOCK);
+
+        XRAY_BLOCKS.add(Blocks.RAW_COPPER_BLOCK);
+        XRAY_BLOCKS.add(Blocks.RAW_IRON_BLOCK);
+        XRAY_BLOCKS.add(Blocks.RAW_GOLD_BLOCK);
+
     }
 
     public static boolean isXrayBlock(Block block) {

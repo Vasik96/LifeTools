@@ -28,7 +28,8 @@
       "com.lifetools.Jesus",
       "com.lifetools.ESP",
       "com.lifetools.util.Utility",
-      "com.lifetools.Xray"
+      "com.lifetools.Xray",
+      "com.lifetools.ServerResourcesBypass"
     ]
   },
   "mixins": [

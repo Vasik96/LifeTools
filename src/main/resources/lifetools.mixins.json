@@ -10,7 +10,8 @@
   "client": [
     "DoubleSliderCallbacksMixin",
     "MixinLightmapTextureManager",
-    "MixinMinecraftClient"
+    "MixinMinecraftClient",
+    "MultiplayerScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
