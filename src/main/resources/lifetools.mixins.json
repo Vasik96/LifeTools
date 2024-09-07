@@ -5,13 +5,16 @@
   "mixins": [
     "LivingEntityMixin",
     "MixinBlock",
-    "MixinBlockOcclusionCache"
+    "MixinBlockOcclusionCache",
+    "MixinVulkanBlockRenderer"
   ],
   "client": [
     "DoubleSliderCallbacksMixin",
+    "GameMenuScreenMixin",
     "MixinLightmapTextureManager",
     "MixinMinecraftClient",
-    "MultiplayerScreenMixin"
+    "MultiplayerScreenMixin",
+    "TitleScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
