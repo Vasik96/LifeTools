@@ -3,16 +3,17 @@
   "minVersion": "0.8",
   "package": "com.lifetools.mixins",
   "mixins": [
+  ],
+  "client": [
+    "BarrierParticleMixin",
+    "DoubleSliderCallbacksMixin",
+    "GameMenuScreenMixin",
     "LivingEntityMixin",
     "MixinBlock",
     "MixinBlockOcclusionCache",
-    "MixinVulkanBlockRenderer"
-  ],
-  "client": [
-    "DoubleSliderCallbacksMixin",
-    "GameMenuScreenMixin",
     "MixinLightmapTextureManager",
     "MixinMinecraftClient",
+    "MixinVulkanBlockRenderer",
     "MultiplayerScreenMixin",
     "TitleScreenMixin"
   ],

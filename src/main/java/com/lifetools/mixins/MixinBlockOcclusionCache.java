@@ -1,5 +1,6 @@
 package com.lifetools.mixins;
 
+import com.lifetools.RendererInfo;
 import com.lifetools.XrayConfig;
 import com.lifetools.XrayList;
 import net.minecraft.block.BlockState;
@@ -15,6 +16,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Pseudo
 @Mixin(targets = "me.jellysquid.mods.sodium.client.render.chunk.compile.pipeline.BlockOcclusionCache")
 public class MixinBlockOcclusionCache {
+
+    static {
+        RendererInfo.setCurrentRenderer("§aSodium");
+    }
 
     @Inject(at = @At("HEAD"), method = "shouldDrawSide", cancellable = true)
     private void shouldDrawSide(BlockState state, BlockView reader, BlockPos pos, Direction face, CallbackInfoReturnable<Boolean> ci) {

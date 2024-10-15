@@ -37,7 +37,8 @@ public class Xray implements ClientModInitializer {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player != null) {
             client.player.sendMessage(
-                    Text.of(INFO_PREFIX + "X-ray has been " + (XrayConfig.ENABLED ? "§aenabled" : "§cdisabled")),
+                    Text.of(INFO_PREFIX + "§8[" + RendererInfo.currentRenderer + "§8]§7 X-ray has been " +
+                            (XrayConfig.ENABLED ? "§aenabled" : "§cdisabled")),
                     false
             );
 
