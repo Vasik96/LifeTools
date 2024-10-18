@@ -16,6 +16,7 @@ public class Jesus implements ClientModInitializer {
     private static boolean jesusModeEnabled = false;
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private boolean pendingJesusReenable = false;
+    private int reenableCooldown = 0;
 
 
     @Override
@@ -34,16 +35,22 @@ public class Jesus implements ClientModInitializer {
 
                 // Set flag to re-enable after the world is loaded
                 pendingJesusReenable = true;
+                reenableCooldown = 100;  // 5 seconds * 20 ticks (100 ticks total)
             }
         });
 
+        // Register a tick event to handle the cooldown and re-enable Jesus mode
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (pendingJesusReenable && mc.player != null) {
-                jesusModeEnabled = true;  // Re-enable Jesus mode
-                pendingJesusReenable = false;  // Reset the flag
+                if (reenableCooldown > 0) {
+                    reenableCooldown--;  // Decrease cooldown timer
+                } else {
+                    jesusModeEnabled = true;  // Re-enable Jesus mode after cooldown
+                    pendingJesusReenable = false;  // Reset the flag
+                    mc.player.sendMessage(Text.literal("§aJesus mode re-enabled after cooldown"));
+                }
             }
         });
-
 
     }
 
