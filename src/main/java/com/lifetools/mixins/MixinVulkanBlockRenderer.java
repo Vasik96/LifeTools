@@ -40,7 +40,7 @@ class MixinVulkanBlockRenderer {
 
             if (XrayList.isXrayBlock(blockState.getBlock())) {
                 // Modify the render type to ensure transparency for X-ray blocks
-                TerrainRenderType renderType = TerrainRenderType.get(BlendMode.TRANSLUCENT.blockRenderLayer);
+                TerrainRenderType renderType = TerrainRenderType.get(BlendMode.SOLID.blockRenderLayer);
 
                 // Get the TerrainBuilder for this render type (TRANSLUCENT)
                 TerrainBuilder terrainBuilder = this.resources.builderPack.builder(renderType);

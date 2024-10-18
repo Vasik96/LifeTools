@@ -15,7 +15,8 @@
     "MixinMinecraftClient",
     "MixinVulkanBlockRenderer",
     "MultiplayerScreenMixin",
-    "TitleScreenMixin"
+    "TitleScreenMixin",
+    "MixinFluidBlock"
   ],
   "injectors": {
     "defaultRequire": 1
