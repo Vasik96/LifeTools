@@ -1,5 +1,6 @@
 package com.lifetools;
 
+import com.lifetools.annotations.Feature;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -23,10 +24,11 @@ import static com.lifetools.LifeTools.INFO_PREFIX;
 
 public class Scaffold implements ClientModInitializer {
     private static KeyBinding toggleScaffoldKey;
-    private boolean scaffoldEnabled = false;
+    public static boolean scaffoldEnabled = false;
+
     @Override
     public void onInitializeClient() {
-        //keybind implementation
+        // Keybind implementation
         toggleScaffoldKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "Toggle Scaffold",
                 InputUtil.Type.KEYSYM,
@@ -36,15 +38,30 @@ public class Scaffold implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
-            if (toggleScaffoldKey.wasPressed()) {
-                scaffoldEnabled = !scaffoldEnabled;
-                client.player.sendMessage(Text.of(INFO_PREFIX + "Scaffold has been " + (scaffoldEnabled ? "§aenabled" : "§cdisabled")), false);
-            }
-
+            checkToggleKey(); // No parameters needed
             if (scaffoldEnabled) {
                 ScaffoldLogic(client);
             }
         });
+    }
+
+
+
+    public void checkToggleKey() {
+        if (toggleScaffoldKey.wasPressed()) {
+            toggleScaffold(); // Call the new method to toggle the scaffold state
+        }
+    }
+
+
+
+    @Feature(methodName = "toggleScaffold", actionType = "toggle", featureName = "Scaffold", booleanField = "scaffoldEnabled")
+    public void toggleScaffold() {
+        scaffoldEnabled = !scaffoldEnabled;
+        ClientPlayerEntity player = MinecraftClient.getInstance().player; // Get the player instance
+        assert player != null; // Ensure player instance is not null
+        player.sendMessage(
+                Text.of(INFO_PREFIX + "Scaffold has been " + (scaffoldEnabled ? "§aenabled" : "§cdisabled")), false);
     }
 
     private void ScaffoldLogic(MinecraftClient client) {
@@ -54,6 +71,7 @@ public class Scaffold implements ClientModInitializer {
             ItemStack itemStack = player.getMainHandStack();
             Block block = Block.getBlockFromItem(itemStack.getItem());
 
+            // Check if the block is not air and is a BlockItem, and if the space below is air
             if (block != Blocks.AIR && itemStack.getItem() instanceof BlockItem && client.world != null && client.world.getBlockState(belowPos).isAir()) {
                 assert client.interactionManager != null;
                 client.interactionManager.interactBlock(player, Hand.MAIN_HAND,

@@ -1,5 +1,6 @@
 package com.lifetools;
 
+import com.lifetools.annotations.Feature;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -24,7 +25,7 @@ import static com.lifetools.LifeTools.INFO_PREFIX;
 public class KillAura implements ClientModInitializer {
 
     private KeyBinding toggleKillauraKey;
-    private boolean killauraEnabled = false;
+    public static boolean killauraEnabled = false;
     private Reach reach;
     private String mode = "default";
     private long lastAttackTime = 0;
@@ -44,11 +45,7 @@ public class KillAura implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggleKillauraKey.wasPressed()) {
-                killauraEnabled = !killauraEnabled;
-                Text message = Text.of(INFO_PREFIX + "Killaura has been " + (killauraEnabled ? "§aenabled" : "§cdisabled"));
-                if (client.player != null) {
-                    client.player.sendMessage(message, false); // Send message to chat
-                }
+                toggleKillaura();  // Call the annotated method
             }
 
             if (killauraEnabled) {
@@ -79,6 +76,17 @@ public class KillAura implements ClientModInitializer {
                                         })
                                         .executes(context -> setMode(StringArgumentType.getString(context, "mode")))))
         ));
+    }
+
+    @Feature(methodName = "toggleKillaura", actionType = "toggle", featureName = "Killaura", booleanField = "killauraEnabled")
+    public void toggleKillaura() {
+        killauraEnabled = !killauraEnabled; // Toggle the state
+
+        // Prepare the feedback message based on the new state
+        String message = INFO_PREFIX + "Killaura has been " + (killauraEnabled ? "§aenabled" : "§cdisabled");
+        if (MinecraftClient.getInstance().player != null) {
+            MinecraftClient.getInstance().player.sendMessage(Text.of(message), false);
+        }
     }
 
     private int setMode(String mode) {
@@ -212,9 +220,6 @@ public class KillAura implements ClientModInitializer {
         }
     }
 
-
-
-
     private boolean isSafeSpot(MinecraftClient client, double x, double y, double z) {
         BlockPos blockPosBelow = new BlockPos((int) x, (int) y - 1, (int) z);
         BlockPos blockPosAbove = new BlockPos((int) x, (int) y, (int) z);
@@ -223,9 +228,6 @@ public class KillAura implements ClientModInitializer {
         assert client.world != null;
         return !client.world.getBlockState(blockPosBelow).isAir() && client.world.isAir(blockPosAbove);
     }
-
-
-
 
     private boolean isNearPreviousLocation(MinecraftClient client, double x, double y, double z) {
         // Check if the new location is too close to the previous location
@@ -236,9 +238,6 @@ public class KillAura implements ClientModInitializer {
                 (client.player.getZ() - z) * (client.player.getZ() - z);
         return distanceSquared < threshold * threshold;
     }
-
-
-
 
     private void attackEntities(MinecraftClient client) {
         // Attack all entities in range

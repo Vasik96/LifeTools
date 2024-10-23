@@ -29,7 +29,10 @@
       "com.lifetools.ESP",
       "com.lifetools.util.Utility",
       "com.lifetools.Xray",
-      "com.lifetools.ServerResourcesBypass"
+      "com.lifetools.ServerResourcesBypass",
+      "com.lifetools.Criticals",
+      "com.lifetools.Jetpack",
+      "com.lifetools.FeatureScreenHelper"
     ]
   },
   "mixins": [

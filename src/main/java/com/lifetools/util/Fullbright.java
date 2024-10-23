@@ -1,11 +1,10 @@
 package com.lifetools.util;
 
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import com.lifetools.annotations.Feature;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.text.Text;
 
-import static com.lifetools.LifeTools.ERROR_PREFIX;
 import static com.lifetools.LifeTools.INFO_PREFIX;
 
 public class Fullbright {
@@ -13,17 +12,16 @@ public class Fullbright {
     public static boolean isFullbright = false;
     private double originalGamma = 1.0; // Default gamma value in Minecraft
 
-    public void toggleFullbright(FabricClientCommandSource source) {
+    @Feature(methodName = "toggleFullbright", actionType = "toggle", featureName = "Fullbright", booleanField = "isFullbright")
+    public void toggleFullbright() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.player == null) {
-            source.sendFeedback(Text.literal(ERROR_PREFIX + "Minecraft client or player not available."));
-            return;
+            return; // Exit if client or player is not available
         }
 
         GameOptions options = client.options;
         if (options == null) {
-            source.sendFeedback(Text.literal(ERROR_PREFIX + "Game options not available."));
-            return;
+            return; // Exit if game options are not available
         }
 
         // Toggle fullbright mode
@@ -35,11 +33,11 @@ public class Fullbright {
 
             // Set gamma to a very high value for fullbright
             setGamma(client, 10000.0);
-            source.sendFeedback(Text.literal(INFO_PREFIX + "Fullbright has been §aenabled"));
+            client.player.sendMessage(Text.literal(INFO_PREFIX + "Fullbright has been §aenabled"), false);
         } else {
             // Restore the original gamma value
             setGamma(client, originalGamma);
-            source.sendFeedback(Text.literal(INFO_PREFIX + "Fullbright has been §cdisabled"));
+            client.player.sendMessage(Text.literal(INFO_PREFIX + "Fullbright has been §cdisabled"), false);
         }
     }
 

@@ -1,6 +1,5 @@
 package com.lifetools.mixins;
 
-import com.lifetools.XrayConfig;
 import com.lifetools.util.Fullbright;
 import net.minecraft.client.option.SimpleOption;
 import net.minecraft.client.option.GameOptions;
@@ -10,6 +9,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+
+import static com.lifetools.Xray.xrayEnabled;
 
 @Mixin(LightmapTextureManager.class)
 public class MixinLightmapTextureManager {
@@ -21,7 +22,7 @@ public class MixinLightmapTextureManager {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/option/GameOptions;getGamma()Lnet/minecraft/client/option/SimpleOption;", opcode = Opcodes.INVOKEVIRTUAL), method = "update(F)V")
     private SimpleOption<Double> redirectGamma(GameOptions options) {
-        if (XrayConfig.ENABLED) {
+        if (xrayEnabled) {
             // When Xray is enabled, set gamma to maximum
             return new SimpleOption<>(
                     "options.gamma",

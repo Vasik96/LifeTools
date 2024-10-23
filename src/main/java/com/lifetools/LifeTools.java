@@ -1,5 +1,6 @@
 package com.lifetools;
 
+import com.lifetools.util.Fullbright;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -12,6 +13,7 @@ import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.text.Text;
 import net.minecraft.MinecraftVersion;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 
 public class LifeTools implements ClientModInitializer {
@@ -28,6 +30,7 @@ public class LifeTools implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        registerFeatures();
         this.version = getModVersion().orElse("unknown");
         ClientCommandRegistrationCallback.EVENT.register(this::registerCommands);
     }
@@ -59,9 +62,37 @@ public class LifeTools implements ClientModInitializer {
         context.getSource().sendFeedback(ClickableChatHelper.createClickableText("    §8- §7/esp", "/esp"));
         context.getSource().sendFeedback(ClickableChatHelper.createClickableText("    §8- §7/util", "/util"));
         context.getSource().sendFeedback(ClickableChatHelper.createClickableText("    §8- §7/util <subcommand>", "/util "));
+        context.getSource().sendFeedback(ClickableChatHelper.createClickableText("    §8- §7/criticals", "/criticals"));
+        context.getSource().sendFeedback(ClickableChatHelper.createClickableText("    §8- §7/jetpack", "/jetpack"));
+
 
         context.getSource().sendFeedback(Text.literal("§8-------------------------------------------"));
         return 1;
+    }
+
+    private void registerFeatures() {
+        registerFeature(NoFall.class);
+        registerFeature(Jetpack.class);
+        registerFeature(KillAura.class);
+        registerFeature(Jesus.class);
+        registerFeature(ESP.class);
+        registerFeature(Criticals.class);
+        registerFeature(BoatFly.class);
+        registerFeature(Fly.class);
+        registerFeature(Scaffold.class);
+        registerFeature(Reach.class);
+        registerFeature(Xray.class);
+        registerFeature(Fullbright.class);
+    }
+
+    private void registerFeature(Class<?> featureClass) {
+        for (Method method : featureClass.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(com.lifetools.annotations.Feature.class)) {
+                com.lifetools.annotations.Feature feature = method.getAnnotation(com.lifetools.annotations.Feature.class);
+                FeatureRegistry.registerFeatureMethod(feature.methodName(), feature.featureName(), method);
+                System.out.println("Registered feature: " + feature.featureName());
+            }
+        }
     }
 
     private Optional<String> getModVersion() {

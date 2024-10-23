@@ -1,47 +1,59 @@
 package com.lifetools;
 
+import com.lifetools.annotations.Feature;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.text.Text;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 
-import static com.lifetools.LifeTools.INFO_PREFIX;
+import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 
 public class NoFall implements ClientModInitializer {
 
-    private static boolean noFallEnabled = false;
+    public static boolean noFallEnabled = false;
 
     @Override
     public void onInitializeClient() {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->
-                registerCommands(dispatcher));
-
         ClientTickEvents.END_CLIENT_TICK.register(client -> handleNoFall());
+
+        // Register the command
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> registerCommands(dispatcher));
     }
 
     private void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         LiteralArgumentBuilder<FabricClientCommandSource> command = ClientCommandManager.literal("nofall")
                 .executes(context -> {
-                    toggleNoFall();
-                    return 1;
+                    toggleNoFall(); // Call the toggle method without arguments
+                    return SINGLE_SUCCESS; // Return 1 for success
                 });
 
         dispatcher.register(command);
     }
 
-    private void toggleNoFall() {
-        noFallEnabled = !noFallEnabled;
-        String message = noFallEnabled ? INFO_PREFIX + "Fall Damage has been §cdisabled" : INFO_PREFIX + "Fall Damage has been §aenabled";
-        assert MinecraftClient.getInstance().player != null;
-        MinecraftClient.getInstance().player.sendMessage(Text.of(message), false);
+    @Feature(methodName = "toggleNoFall", actionType = "toggle", featureName = "No Fall", booleanField = "noFallEnabled")
+    public void toggleNoFall() {
+        noFallEnabled = !noFallEnabled; // Toggle the state
+
+        // Update the message based on the new state
+        String message = noFallEnabled ?
+                LifeTools.INFO_PREFIX + "Fall Damage has been §aenabled" : // ON state message
+                LifeTools.INFO_PREFIX + "Fall Damage has been §cdisabled"; // OFF state message
+
+        // Send the message to the player
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (player != null) {
+            player.sendMessage(Text.of(message), false);
+        }
     }
+
+
 
     private void handleNoFall() {
         MinecraftClient client = MinecraftClient.getInstance();

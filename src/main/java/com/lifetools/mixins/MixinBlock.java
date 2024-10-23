@@ -1,6 +1,5 @@
 package com.lifetools.mixins;
 
-import com.lifetools.XrayConfig;
 import com.lifetools.XrayList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -12,12 +11,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static com.lifetools.Xray.xrayEnabled;
+
 @Mixin(Block.class)
 public class MixinBlock {
 
     @Inject(at = @At("RETURN"), method = "shouldDrawSide", cancellable = true)
     private static void shouldDrawSide(BlockState state, BlockView reader, BlockPos pos, Direction face, BlockPos otherPos, CallbackInfoReturnable<Boolean> ci) {
-        if (XrayConfig.ENABLED) {
+        if (xrayEnabled) {
             if (XrayList.isXrayBlock(state.getBlock())) {
                 ci.setReturnValue(true);
                 return;

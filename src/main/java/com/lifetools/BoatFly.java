@@ -1,5 +1,6 @@
 package com.lifetools;
 
+import com.lifetools.annotations.Feature;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -21,7 +22,7 @@ import static com.lifetools.LifeTools.WARNING_PREFIX;
 
 public class BoatFly implements ClientModInitializer {
 
-    private boolean boatFlyEnabled = false;
+    public static boolean boatFlyEnabled = false;
     private double boatFlySpeed = 1.0;
     private double oldY = 0.0;
     private int floatingTickCount = 0;
@@ -53,17 +54,19 @@ public class BoatFly implements ClientModInitializer {
                 });
 
         boatflyCommand.then(ClientCommandManager.literal("speed").then(speedArgument));
-
         dispatcher.register(boatflyCommand);
     }
 
-    private void toggleBoatFly() {
+    @Feature(methodName = "toggleBoatFly", actionType = "toggle", featureName = "Boat Fly", booleanField = "boatFlyEnabled")
+    public void toggleBoatFly() {
         boatFlyEnabled = !boatFlyEnabled;
         String status = boatFlyEnabled ? "§aenabled" : "§cdisabled";
         assert MinecraftClient.getInstance().player != null;
         MinecraftClient.getInstance().player.sendMessage(
                 Text.of(INFO_PREFIX + "Boat Fly has been " + status), false);
     }
+
+
 
     private int setBoatFlySpeed(CommandContext<FabricClientCommandSource> context, int speed) {
         if (speed < 1 || speed > 10) {

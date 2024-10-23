@@ -5,18 +5,17 @@
   "mixins": [
   ],
   "client": [
-    "BarrierParticleMixin",
     "DoubleSliderCallbacksMixin",
     "GameMenuScreenMixin",
     "LivingEntityMixin",
     "MixinBlock",
     "MixinBlockOcclusionCache",
+    "MixinFluidBlock",
     "MixinLightmapTextureManager",
     "MixinMinecraftClient",
     "MixinVulkanBlockRenderer",
     "MultiplayerScreenMixin",
-    "TitleScreenMixin",
-    "MixinFluidBlock"
+    "TitleScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

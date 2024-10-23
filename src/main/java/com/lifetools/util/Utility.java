@@ -58,7 +58,7 @@ public class Utility implements ClientModInitializer {
                                 }))
                         .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("fullbright")
                                 .executes(context -> {
-                                    new Fullbright().toggleFullbright(context.getSource());
+                                    new Fullbright().toggleFullbright();
                                     return 1;
                                 }))
                         .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("nickname")

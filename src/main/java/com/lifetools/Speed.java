@@ -19,6 +19,7 @@ import static com.lifetools.LifeTools.WARNING_PREFIX;
 public class Speed implements ClientModInitializer {
     private float scaledSpeed = 0.1f; // Default speed
     private boolean speedChanged = false; // Flag to check if speed was changed
+    private float storedSpeed = 0.1f; // To store the player's original speed
 
     @Override
     public void onInitializeClient() {
@@ -46,6 +47,12 @@ public class Speed implements ClientModInitializer {
         }
 
         assert MinecraftClient.getInstance().player != null;
+
+        if (!speedChanged) {
+            // Store the player's original speed before any changes are made
+            storedSpeed = (float) Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).getBaseValue();
+        }
+
         scaledSpeed = newSpeed / 20.0f * 0.95f + 0.05f;
 
         // Set the player's movement speed attributes
@@ -64,7 +71,9 @@ public class Speed implements ClientModInitializer {
     }
 
     private void resetSpeedToDefault() {
-        scaledSpeed = 0.1f; // Reset to default speed
+        // Reset to the original stored speed
+        assert MinecraftClient.getInstance().player != null;
+        Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).setBaseValue(storedSpeed);
         speedChanged = false; // Stop continuously changing the speed
     }
 }

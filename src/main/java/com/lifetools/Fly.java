@@ -1,5 +1,6 @@
 package com.lifetools;
 
+import com.lifetools.annotations.Feature;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -24,8 +25,7 @@ public class Fly implements ClientModInitializer {
     private KeyBinding toggleFlyingKey;
     private double oldY = 0.0D;
     private int floatingTickCount = 0;
-    private boolean isFlying = false;
-
+    public static boolean isFlying = false;
 
     @Override
     public void onInitializeClient() {
@@ -45,6 +45,7 @@ public class Fly implements ClientModInitializer {
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> isFlying = false);
     }
+
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             dispatcher.register(
@@ -58,10 +59,15 @@ public class Fly implements ClientModInitializer {
             );
         });
     }
+
+    @Feature(methodName = "onFlyCommand", actionType = "toggle", featureName = "Fly Mode", booleanField = "isFlying")
     private int onFlyCommand() {
         toggleFlying(MinecraftClient.getInstance().player);
         return 1;
     }
+
+
+
     private int onFlySpeedCommand(int speed) {
         if (speed < 1 || speed > 30) {
             String errorMessage = WARNING_PREFIX + "§6Fly speed can only be set from §a1 §6to §a30";
@@ -76,6 +82,7 @@ public class Fly implements ClientModInitializer {
         MinecraftClient.getInstance().player.sendMessage(Text.of(message), false);
         return 1;
     }
+
     private void toggleFlying(ClientPlayerEntity player) {
         if (player != null) {
             isFlying = !isFlying;
@@ -106,7 +113,6 @@ public class Fly implements ClientModInitializer {
     private void setFlyingSpeed(ClientPlayerEntity player, int speed) {
         if (player != null) {
             float defaultSpeed = 0.05f;
-
             float newSpeed = defaultSpeed * speed;
 
             PlayerAbilities abilities = player.getAbilities();

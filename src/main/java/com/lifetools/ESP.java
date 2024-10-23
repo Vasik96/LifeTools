@@ -1,5 +1,6 @@
 package com.lifetools;
 
+import com.lifetools.annotations.Feature;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -21,7 +22,7 @@ import static com.lifetools.LifeTools.INFO_PREFIX;
 public class ESP implements ClientModInitializer {
 
     private static final Set<LivingEntity> glowingEntities = new HashSet<>();
-    private static boolean isEspEnabled = false; // Track the state of the ESP feature
+    public static boolean isEspEnabled = false; // Track the state of the ESP feature
 
     @Override
     public void onInitializeClient() {
@@ -37,12 +38,20 @@ public class ESP implements ClientModInitializer {
         );
     }
 
-    private int toggleEspEffect(CommandContext<FabricClientCommandSource> context) {
+
+    public int toggleEspEffect(CommandContext<FabricClientCommandSource> context) {
+        toggleEsp(); // Call the new method to toggle the ESP effect
+        return 1; // Return 1 to indicate command success
+    }
+
+    // New method to toggle the ESP effect
+    @Feature(methodName = "toggleEsp", actionType = "toggle", featureName = "ESP", booleanField = "isEspEnabled")
+    public void toggleEsp() {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayerEntity player = client.player;
 
         if (player == null) {
-            return 0;
+            return; // Return if the player is null
         }
 
         Text message;
@@ -54,10 +63,8 @@ public class ESP implements ClientModInitializer {
             message = Text.literal(INFO_PREFIX + "ESP has been §aenabled");
         }
 
-        context.getSource().sendFeedback(message);
-        isEspEnabled = !isEspEnabled;
-
-        return 1;
+        client.player.sendMessage(message, false); // Send message to player
+        isEspEnabled = !isEspEnabled; // Toggle the state
     }
 
     private void enableEspEffect() {

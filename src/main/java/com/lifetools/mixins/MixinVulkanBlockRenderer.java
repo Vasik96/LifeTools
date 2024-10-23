@@ -1,8 +1,7 @@
 package com.lifetools.mixins;
 
-import com.lifetools.XrayConfig;
 import com.lifetools.XrayList;
-import com.lifetools.RendererInfo; // Import your RendererInfo class
+import com.lifetools.RendererInfo;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.vulkanmod.render.chunk.build.thread.BuilderResources;
@@ -18,6 +17,8 @@ import net.vulkanmod.render.vertex.TerrainRenderType;
 import net.vulkanmod.render.vertex.TerrainBuilder;
 import net.fabricmc.fabric.api.renderer.v1.material.BlendMode;
 
+import static com.lifetools.Xray.xrayEnabled;
+
 @Mixin(targets = "net.vulkanmod.render.chunk.build.renderer.BlockRenderer")
 class MixinVulkanBlockRenderer {
 
@@ -29,12 +30,12 @@ class MixinVulkanBlockRenderer {
 
     // Static block to set the renderer name when the mixin is loaded
     static {
-        RendererInfo.setCurrentRenderer("§cVulkanMod"); // Set the current renderer to Vulkan
+        RendererInfo.setCurrentRenderer("§cVulkan"); // Set the current renderer to Vulkan
     }
 
     @Inject(at = @At("HEAD"), method = "renderBlock", cancellable = true)
     private void renderBlock(BlockState blockState, BlockPos blockPos, Vector3f pos, CallbackInfo ci) {
-        if (XrayConfig.ENABLED) {
+        if (xrayEnabled) {
             // Disable back-face culling to render all sides
             this.backFaceCulling = false;
 
