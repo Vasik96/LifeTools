@@ -1,9 +1,8 @@
 package com.lifetools;
 
 import com.lifetools.annotations.Feature;
+import com.lifetools.commandsystem.LifeToolsCmd;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -21,21 +20,22 @@ public class Reach implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        // Register the /reach command
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->
-                dispatcher.register(ClientCommandManager.literal("reach")
-                        .executes(context -> {
-                            toggleReach(); // Call the toggleReach method without arguments
-                            return 1; // Indicate command success
-                        })
-                ));
+        registerCommands();
 
         // Continuously update the player's reach on client ticks
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (MinecraftClient.getInstance().player != null && reachToggled) {
                 // Set the player's interaction range to the toggled value
-                Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE)).setBaseValue(TOGGLED_REACH);
+                Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE))
+                        .setBaseValue(TOGGLED_REACH);
             }
+        });
+    }
+
+    private void registerCommands() {
+        // Register the /reach command using custom CommandSystem
+        LifeToolsCmd.addCmd("reach", args -> {
+            toggleReach();
         });
     }
 
@@ -48,11 +48,13 @@ public class Reach implements ClientModInitializer {
 
         if (reachToggled) {
             // Set the player's interaction range to the toggled value
-            Objects.requireNonNull(client.player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE)).setBaseValue(TOGGLED_REACH);
+            Objects.requireNonNull(client.player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE))
+                    .setBaseValue(TOGGLED_REACH);
             client.player.sendMessage(Text.of(INFO_PREFIX + "Reach has been §aenabled§7 - Note that this feature is limited to the server's configuration"), false);
         } else {
             // Reset the player's interaction range to the default value
-            Objects.requireNonNull(client.player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE)).setBaseValue(DEFAULT_REACH);
+            Objects.requireNonNull(client.player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE))
+                    .setBaseValue(DEFAULT_REACH);
             client.player.sendMessage(Text.of(INFO_PREFIX + "Reach has been §cdisabled"), false);
         }
     }

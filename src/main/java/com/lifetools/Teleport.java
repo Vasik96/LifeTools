@@ -1,13 +1,9 @@
 package com.lifetools;
 
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.context.CommandContext;
+import com.lifetools.commandsystem.LifeToolsCmd;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
@@ -16,7 +12,6 @@ import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 import static com.lifetools.LifeTools.*;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
 public class Teleport implements ClientModInitializer {
 
@@ -35,12 +30,26 @@ public class Teleport implements ClientModInitializer {
     }
 
     private void registerCommands() {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(
-                literal("tpmod")
-                        .executes(this::correctUsage)
-                        .then(ClientCommandManager.argument("distance", IntegerArgumentType.integer())
-                                .executes(this::onTpmodCommand))
-        ));
+        LifeToolsCmd.addCmd("tpmod", args -> {
+            if (args.length == 0) {
+                // Call correctUsage() method with the context (fabric source)
+                correctUsage();  // or handle the feedback directly here
+            } else if (args.length == 1) {
+                try {
+                    // Parse the distance argument and call onTpmodCommand
+                    int distance = Integer.parseInt(args[0]);
+                    onTpmodCommand(distance);
+                } catch (NumberFormatException e) {
+                    sendErrorMessage("§6Invalid distance. Please enter a valid integer.");
+                }
+            } else {
+                sendErrorMessage("§6Usage: !tpmod or !tpmod <distance>");
+            }
+        });
+    }
+
+    private void sendErrorMessage(String message) {
+        MinecraftClient.getInstance().player.sendMessage(Text.of(WARNING_PREFIX + message), false);
     }
 
     private void registerKeyBindingHandler() {
@@ -51,19 +60,22 @@ public class Teleport implements ClientModInitializer {
         });
     }
 
-    private int correctUsage(CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Text.literal(INFO_PREFIX + "Correct usage:\n"
-                + "   §7/tpmod <value>"));
-        return 1;
+    private void correctUsage() {
+        MinecraftClient.getInstance().player.sendMessage(Text.literal(INFO_PREFIX + "Correct usage: §7/tpmod <value>"), false);
     }
 
-    private int onTpmodCommand(CommandContext<FabricClientCommandSource> context) {
-        int totalDistance = IntegerArgumentType.getInteger(context, "distance");
-        teleportForward(totalDistance, context.getSource());
-        return 1;
+    private void onTpmodCommand(int totalDistance) {
+        teleportForward(totalDistance);
     }
 
-    private void teleportForward(int totalDistance, FabricClientCommandSource source) {
+    public static void executeTeleportForward(int tpDistance) {
+        Teleport teleport = new Teleport();
+        teleport.teleportForward(tpDistance);
+    }
+
+
+
+    private void teleportForward(int totalDistance) {
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         ClientPlayerEntity player = minecraftClient.player;
 
@@ -85,26 +97,24 @@ public class Teleport implements ClientModInitializer {
 
                 // Notify the player that they have teleported.
                 Text message = Text.of(INFO_PREFIX + "Teleported§a " + player.getName().getString() + " §7forward §a" + totalDistance + " §7blocks");
-                sendMessage(source, player, message);
+                sendMessage(message);
             } else {
                 Text errorMessage = Text.of(WARNING_PREFIX + "§6Teleport distance must be between §a1 §6and §a150 §6blocks");
-                sendMessage(source, player, errorMessage);
+                sendMessage(errorMessage);
             }
         } else {
             // Send an error message if the player is not in-game.
             Text errorMessage = Text.of(ERROR_PREFIX + "§cError teleporting, please try again");
-            sendMessage(source, null, errorMessage);
+            sendMessage(errorMessage);
         }
     }
 
-    private void sendMessage(FabricClientCommandSource source, ClientPlayerEntity player, Text message) {
-        if (source != null) {
-            source.sendFeedback(message);
-        } else if (player != null) {
-            player.sendMessage(message, false);
-        }
+
+    private void sendMessage(Text message) {
+        MinecraftClient.getInstance().player.sendMessage(message, false);
     }
+
     private void teleportForward() {
-        teleportForward(10, null);
+        teleportForward(10);
     }
 }

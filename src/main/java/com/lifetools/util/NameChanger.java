@@ -1,6 +1,5 @@
 package com.lifetools.util;
 
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.session.Session;
@@ -12,15 +11,16 @@ import java.util.UUID;
 
 import static com.lifetools.LifeTools.ERROR_PREFIX;
 import static com.lifetools.LifeTools.INFO_PREFIX;
+import static com.lifetools.util.Utility.sendFeedback;
 
 public class NameChanger {
 
     private static final int MIN_NAME_LENGTH = 3;
     private static final int MAX_NAME_LENGTH = 16;
 
-    public void changeName(FabricClientCommandSource source, String newName) {
+    public void changeName(String newName) {
         if (newName.length() < MIN_NAME_LENGTH || newName.length() > MAX_NAME_LENGTH) {
-            source.sendError(Text.literal(ERROR_PREFIX + "Nickname must be between " + MIN_NAME_LENGTH + " and " + MAX_NAME_LENGTH + " characters."));
+            sendFeedback(Text.literal(ERROR_PREFIX + "Nickname must be between " + MIN_NAME_LENGTH + " and " + MAX_NAME_LENGTH + " characters."));
             return;
         }
 
@@ -32,7 +32,7 @@ public class NameChanger {
                 // Find the field using reflection
                 Field sessionField = getSessionField();
                 if (sessionField == null) {
-                    source.sendError(Text.literal(ERROR_PREFIX + "Failed to access session field."));
+                    sendFeedback(Text.literal(ERROR_PREFIX + "Failed to access session field."));
                     return;
                 }
 
@@ -51,15 +51,15 @@ public class NameChanger {
                 // Set the new session with the changed username
                 sessionField.set(client, newSession);
 
-                source.sendFeedback(Text.literal(INFO_PREFIX + "Nickname has been changed to: §r" + newName));
+                sendFeedback(Text.literal(INFO_PREFIX + "Nickname has been changed to: §r" + newName));
 
                 // Disconnect after changing the name
                 Disconnect.reason = "Your nickname has been changed successfully";
-                new Disconnect().handleDisconnect(source);
+                new Disconnect().handleDisconnect();
 
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
-                source.sendError(Text.literal(ERROR_PREFIX + "Failed to change nickname."));
+                sendFeedback(Text.literal(ERROR_PREFIX + "Failed to change nickname."));
             }
         }
     }

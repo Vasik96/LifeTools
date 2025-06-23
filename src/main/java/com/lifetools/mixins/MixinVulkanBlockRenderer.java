@@ -20,7 +20,7 @@ import net.fabricmc.fabric.api.renderer.v1.material.BlendMode;
 import static com.lifetools.Xray.xrayEnabled;
 
 @Mixin(targets = "net.vulkanmod.render.chunk.build.renderer.BlockRenderer")
-class MixinVulkanBlockRenderer {
+public class MixinVulkanBlockRenderer {
 
     @Mutable
     @Shadow @Final

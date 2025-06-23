@@ -1,6 +1,8 @@
 package com.lifetools;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.message.SentMessage;
+import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.math.Vec3d;
 
@@ -12,6 +14,7 @@ public class FlyPacket {
             PlayerMoveC2SPacket.PositionAndOnGround packet = new PlayerMoveC2SPacket.PositionAndOnGround(
                     pos.getX(), pos.getY(), pos.getZ(), onGround
             );
+
 
             client.player.networkHandler.sendPacket(packet);
         }

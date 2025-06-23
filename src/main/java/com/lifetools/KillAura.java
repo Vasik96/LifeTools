@@ -1,6 +1,7 @@
 package com.lifetools;
 
 import com.lifetools.annotations.Feature;
+import com.lifetools.commandsystem.LifeToolsCmd;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -27,7 +28,7 @@ public class KillAura implements ClientModInitializer {
     private KeyBinding toggleKillauraKey;
     public static boolean killauraEnabled = false;
     private Reach reach;
-    private String mode = "default";
+    public static String mode = "default";
     private long lastAttackTime = 0;
     private final Map<Entity, Long> lastAttackTimes = new HashMap<>();
 
@@ -57,25 +58,59 @@ public class KillAura implements ClientModInitializer {
     }
 
     private void registerCommands() {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(
-                ClientCommandManager.literal("killaura")
-                        .then(ClientCommandManager.literal("mode")
-                                .executes(context -> {
-                                    // Display the current mode if no argument is provided
-                                    assert MinecraftClient.getInstance().player != null;
-                                    MinecraftClient.getInstance().player.sendMessage(Text.of(INFO_PREFIX + "Current Killaura mode: §a" + mode), false);
-                                    return 1;
-                                })
-                                .then(ClientCommandManager.argument("mode", StringArgumentType.string())
-                                        .suggests((context, builder) -> {
-                                            builder.suggest("newcombat");
-                                            builder.suggest("avoid_too_much_packets");
-                                            builder.suggest("default");
-                                            builder.suggest("TPAura"); // Added new mode suggestion
-                                            return builder.buildFuture();
-                                        })
-                                        .executes(context -> setMode(StringArgumentType.getString(context, "mode")))))
-        ));
+        // Register the "killaura" base command
+            LifeToolsCmd.addCmd("killaura", args -> {
+                if (args.length == 0) {
+                    // No arguments provided, display a generic message
+                    MinecraftClient.getInstance().player.sendMessage(Text.of(INFO_PREFIX + "Usage: !killaura mode <mode_name> \n" +
+                            "Modes:\n" +
+                            " - newcombat\n" +
+                            " - avoid_too_much_packets\n" +
+                            " - default\n" +
+                            " - tpaura"), false);
+                    return;
+                }
+
+                // Handle subcommands
+                if ("mode".equalsIgnoreCase(args[0])) {
+                    handleModeCommand(args);
+                } else {
+                    // Unknown subcommand
+                    MinecraftClient.getInstance().player.sendMessage(Text.of(INFO_PREFIX + "Unknown subcommand: " + args[0]), false);
+                }
+            });
+
+        // Add suggestions for the "mode" subcommand
+        LifeToolsCmd.addCmd("killaura mode", args -> {
+            // This is a helper for mode handling; logic is in the base command
+            handleModeCommand(args);
+        }, false);
+    }
+
+    private void handleModeCommand(String[] args) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        assert client.player != null;
+
+        if (args.length == 1) {
+            // No mode specified, display the current mode
+            client.player.sendMessage(Text.of(INFO_PREFIX + "Current Killaura mode: §a" + mode), false);
+            return;
+        }
+
+        // Set the mode if specified
+        String newMode = args[1].toLowerCase();
+        switch (newMode) {
+            case "newcombat":
+            case "avoid_too_much_packets":
+            case "default":
+            case "tpaura":
+                setMode(newMode);
+                client.player.sendMessage(Text.of(INFO_PREFIX + "Killaura mode has been set to: §a" + newMode), false);
+                break;
+            default:
+                // Invalid mode
+                client.player.sendMessage(Text.of(INFO_PREFIX + "Invalid mode: §c" + newMode), false);
+        }
     }
 
     @Feature(methodName = "toggleKillaura", actionType = "toggle", featureName = "Killaura", booleanField = "killauraEnabled")
@@ -89,7 +124,12 @@ public class KillAura implements ClientModInitializer {
         }
     }
 
-    private int setMode(String mode) {
+    public static void setModeFromExternal(String mode) {
+        KillAura killAura = new KillAura();
+        killAura.setMode(mode);
+    }
+
+    public int setMode(String mode) {
         this.mode = mode;
         assert MinecraftClient.getInstance().player != null;
         MinecraftClient.getInstance().player.sendMessage(Text.of(INFO_PREFIX + "Killaura mode set to §a" + mode), false);

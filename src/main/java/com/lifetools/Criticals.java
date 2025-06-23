@@ -1,6 +1,7 @@
 package com.lifetools;
 
 import com.lifetools.annotations.Feature;
+import com.lifetools.commandsystem.LifeToolsCmd;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -21,11 +22,9 @@ public class Criticals implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(ClientCommandManager.literal("criticals")
-                .executes(context -> {
-                    toggle();
-                    return 1; // Return success code
-                })));
+        LifeToolsCmd.addCmd("criticals", args -> {
+            toggle();
+        });
 
         // Register the client tick event
         ClientTickEvents.END_CLIENT_TICK.register(client -> onUpdate());

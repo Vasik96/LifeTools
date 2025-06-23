@@ -1,6 +1,7 @@
 package com.lifetools;
 
 import com.lifetools.annotations.Feature;
+import com.lifetools.commandsystem.LifeToolsCmd;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -47,16 +48,26 @@ public class Fly implements ClientModInitializer {
     }
 
     private void registerCommands() {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            dispatcher.register(
-                    literal("fly").executes(context -> onFlyCommand())
-            );
+        // Register the "fly" command
+        LifeToolsCmd.addCmd("fly", args -> {
+            onFlyCommand();
+        });
 
-            dispatcher.register(
-                    literal("flyspeed")
-                            .then(ClientCommandManager.argument("speed", IntegerArgumentType.integer())
-                                    .executes(context -> onFlySpeedCommand(IntegerArgumentType.getInteger(context, "speed"))))
-            );
+        // Register the "flyspeed" command with integer parameter handling
+        LifeToolsCmd.addCmd("flyspeed", args -> {
+            if (args.length < 1) {
+                // No speed provided, display usage information
+                MinecraftClient.getInstance().player.sendMessage(Text.of(INFO_PREFIX + "Usage: !flyspeed <speed>"), false);
+                return;
+            }
+
+            try {
+                int speed = Integer.parseInt(args[0]); // Parse the first argument as an integer
+                onFlySpeedCommand(speed); // Pass the parsed speed to the handler
+            } catch (NumberFormatException e) {
+                // Handle invalid number format
+                MinecraftClient.getInstance().player.sendMessage(Text.of(INFO_PREFIX + "Invalid speed. Please enter a valid integer."), false);
+            }
         });
     }
 
@@ -90,7 +101,7 @@ public class Fly implements ClientModInitializer {
         }
     }
 
-    private void setFlying(ClientPlayerEntity player, boolean enabled) {
+    public static void setFlying(ClientPlayerEntity player, boolean enabled) {
         if (player != null) {
             isFlying = enabled;
 
@@ -130,14 +141,14 @@ public class Fly implements ClientModInitializer {
     private void checkAntiFlyKick() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player != null && isFlying) {
-            if (client.player.getPos().getY() >= oldY - 0.0433D) {
+            if (client.player.getPos().getY() >= oldY - 0.0633D) {
                 floatingTickCount += 1;
             }
 
             oldY = client.player.getPos().getY();
 
-            if (floatingTickCount > 20) {
-                FlyPacket.sendPosition(client.player.getPos().subtract(0.0, 0.0433D, 0.5));
+            if (floatingTickCount > 14) {
+                FlyPacket.sendPosition(client.player.getPos().subtract(0.0, 0.0633D, 0.0));
                 floatingTickCount = 0;
             }
         }

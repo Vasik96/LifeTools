@@ -1,15 +1,8 @@
 package com.lifetools;
 
 import com.lifetools.annotations.Feature;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
+import com.lifetools.commandsystem.LifeToolsCmd;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -23,38 +16,40 @@ import static com.lifetools.LifeTools.WARNING_PREFIX;
 public class BoatFly implements ClientModInitializer {
 
     public static boolean boatFlyEnabled = false;
-    private double boatFlySpeed = 1.0;
+    public static double boatFlySpeed = 1.0;
     private double oldY = 0.0;
     private int floatingTickCount = 0;
 
     @Override
     public void onInitializeClient() {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->
-                registerCommands(dispatcher));
+        // Register the boatfly command with subcommands directly implemented
+        LifeToolsCmd.addCmd("boatfly", args -> {
+            if (args.length == 0) {
+                // If no subcommand is provided, toggle the boat fly status
+                toggleBoatFly();
+            } else if (args.length == 1 && "speed".equalsIgnoreCase(args[0])) {
+                // Subcommand: boatfly speed
+                sendErrorMessage("Usage: !boatfly speed <value>");
+            } else if (args.length == 2 && "speed".equalsIgnoreCase(args[0])) {
+                // Subcommand: boatfly speed <value>
+                try {
+                    int speed = Integer.parseInt(args[1]);
+                    setBoatFlySpeed(speed);
+                } catch (NumberFormatException e) {
+                    sendInvalidSpeedMessage();
+                }
+            } else {
+                sendErrorMessage("Invalid usage. Example: !boatfly or !boatfly speed <value>");
+            }
+        });
 
+        // Register a client tick event to check for key presses and handle the fly mechanics
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (boatFlyEnabled) {
                 handleBoatFly(client);
                 checkAntiFlyKick(client);
             }
         });
-    }
-
-    private void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralArgumentBuilder<FabricClientCommandSource> boatflyCommand = ClientCommandManager.literal("boatfly")
-                .executes(context -> {
-                    toggleBoatFly();
-                    return 1;
-                });
-
-        RequiredArgumentBuilder<FabricClientCommandSource, Integer> speedArgument = ClientCommandManager.argument("speed", IntegerArgumentType.integer())
-                .executes(context -> {
-                    int speed = IntegerArgumentType.getInteger(context, "speed");
-                    return setBoatFlySpeed(context, speed);
-                });
-
-        boatflyCommand.then(ClientCommandManager.literal("speed").then(speedArgument));
-        dispatcher.register(boatflyCommand);
     }
 
     @Feature(methodName = "toggleBoatFly", actionType = "toggle", featureName = "Boat Fly", booleanField = "boatFlyEnabled")
@@ -66,20 +61,22 @@ public class BoatFly implements ClientModInitializer {
                 Text.of(INFO_PREFIX + "Boat Fly has been " + status), false);
     }
 
+    private void sendInvalidSpeedMessage() {
+        assert MinecraftClient.getInstance().player != null;
+        MinecraftClient.getInstance().player.sendMessage(
+                Text.of(WARNING_PREFIX + "§6Boat Fly speed must be an integer between 1 and 10."), false);
+    }
 
-
-    private int setBoatFlySpeed(CommandContext<FabricClientCommandSource> context, int speed) {
+    private void setBoatFlySpeed(int speed) {
         if (speed < 1 || speed > 10) {
-            String errorMessage = WARNING_PREFIX + "§6Boat Fly speed can only be set from §a1 §6to §a10";
-            context.getSource().sendFeedback(Text.of(errorMessage));
-            return 0; // Return 0 to indicate failure
+            sendInvalidSpeedMessage();
+            return;
         }
 
         boatFlySpeed = speed;
         assert MinecraftClient.getInstance().player != null;
         MinecraftClient.getInstance().player.sendMessage(
                 Text.of(String.format(INFO_PREFIX + "Boat Fly speed has been set to §a%d", speed)), false);
-        return 1; // Return 1 to indicate success
     }
 
     private void handleBoatFly(MinecraftClient client) {
@@ -97,7 +94,7 @@ public class BoatFly implements ClientModInitializer {
             }
 
             // Apply slight drag for realism
-            boat.setVelocity(boat.getVelocity().multiply(0.98, 1, 0.98)); //some stupid shit here
+            boat.setVelocity(boat.getVelocity().multiply(0.98, 1, 0.98)); // Apply slight drag for realism
         }
     }
 
@@ -118,5 +115,10 @@ public class BoatFly implements ClientModInitializer {
                 floatingTickCount = 0;
             }
         }
+    }
+
+    private void sendErrorMessage(String message) {
+        assert MinecraftClient.getInstance().player != null;
+        MinecraftClient.getInstance().player.sendMessage(Text.of(WARNING_PREFIX + message), false);
     }
 }

@@ -13,7 +13,7 @@ public class Disconnect {
     // Static string to store the reason for disconnecting
     public static String reason = "Manual command";
 
-    public void handleDisconnect(FabricClientCommandSource source) {
+    public void handleDisconnect() {
         String customDisconnectMessage = """
                 §8■ ■ ■ ■ ■ ■ ■ ■  §cDisconnected  §8■ ■ ■ ■ ■ ■ ■
 

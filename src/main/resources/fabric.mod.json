@@ -4,6 +4,7 @@
   "version": "${version}",
   "name": "Life Tools",
   "description": "A collection of my Minecraft utility mods.",
+  "accessWidener": "lifetools.accesswidener",
   "authors": [
     "Vasik96"
   ],
@@ -32,7 +33,14 @@
       "com.lifetools.ServerResourcesBypass",
       "com.lifetools.Criticals",
       "com.lifetools.Jetpack",
-      "com.lifetools.FeatureScreenHelper"
+      "com.lifetools.FeatureScreenHelper",
+      "com.lifetools.AirJump",
+      "com.lifetools.Strafe",
+      "com.lifetools.commandsystem.LifeToolsCmd",
+      "com.lifetools.BlockSlipperiness",
+      "com.lifetools.WindChargeLaunch",
+      "com.lifetools.ChatSpam",
+      "com.lifetools.InstantClimb"
     ]
   },
   "mixins": [

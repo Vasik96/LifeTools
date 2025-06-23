@@ -2,7 +2,6 @@ package com.lifetools;
 
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.Text;
-import net.minecraft.text.Texts;
 import net.minecraft.util.Formatting;
 
 public class ClickableChatHelper {

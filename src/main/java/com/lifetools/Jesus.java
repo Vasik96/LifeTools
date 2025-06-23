@@ -1,6 +1,7 @@
 package com.lifetools;
 
 import com.lifetools.annotations.Feature;
+import com.lifetools.commandsystem.LifeToolsCmd;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -20,12 +21,9 @@ public class Jesus implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         // Register the /jesus command
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(ClientCommandManager.literal("jesus")
-                .executes(context -> {
-                    toggleJesusMode();
-                    return 1;
-                })
-        ));
+        LifeToolsCmd.addCmd("jesus", args -> {
+            toggleJesusMode();
+        });
 
         // Register the world join event (used for switching worlds)
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {

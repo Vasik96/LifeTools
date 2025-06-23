@@ -1,22 +1,14 @@
 package com.lifetools;
 
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandSource;
+import com.lifetools.commandsystem.LifeToolsCmd;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.fabricmc.api.ClientModInitializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,10 +19,18 @@ public class ClientEffects implements ClientModInitializer {
 
     private static final Map<String, RegistryEntry<StatusEffect>> EFFECT_MAP = new HashMap<>();
 
+
+
+
+    public ClientEffects() {
+        initializeEffectMap();
+        registerCommands();
+    }
+
     @Override
     public void onInitializeClient() {
         initializeEffectMap();
-        ClientCommandRegistrationCallback.EVENT.register(this::registerCommands);
+        registerCommands();
     }
 
     private void initializeEffectMap() {
@@ -46,87 +46,131 @@ public class ClientEffects implements ClientModInitializer {
         });
     }
 
-    private void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
-        LiteralArgumentBuilder<FabricClientCommandSource> command = LiteralArgumentBuilder
-                .<FabricClientCommandSource>literal("clienteffect")
-                .executes(this::correctUsage)
-                .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("clear")
-                        .executes(this::clearEffects)
-                        .then(com.mojang.brigadier.builder.RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("effect", StringArgumentType.string())
-                                .suggests(EFFECT_SUGGESTIONS)
-                                .executes(this::clearSpecificEffect)))
-                .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("give")
-                        .then(com.mojang.brigadier.builder.RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("effect", StringArgumentType.string())
-                                .suggests(EFFECT_SUGGESTIONS)
-                                .then(com.mojang.brigadier.builder.RequiredArgumentBuilder.<FabricClientCommandSource, Integer>argument("value", IntegerArgumentType.integer(1, 255))
-                                        .executes(this::setEffect))));
+    private void registerCommands() {
+        // Register the "clienteffect" base command
+        LifeToolsCmd.addCmd("clienteffect", args -> {
+            if (args.length == 0) {
+                correctUsage();
+                return;
+            }
 
-        dispatcher.register(command);
-    }
-
-    private static final SuggestionProvider<FabricClientCommandSource> EFFECT_SUGGESTIONS = (context, builder) ->
-            CommandSource.suggestMatching(EFFECT_MAP.keySet().stream(), builder);
-
-
-    private int correctUsage(CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Text.literal(INFO_PREFIX + "Correct usage:\n"
-                + "   §7/clienteffect give [effect] <value>\n"
-                + "   §7/clienteffect clear [effect]\n"
-                + "   §7/clienteffect clear"));
-        return 1;
+            String subCommand = args[0].toLowerCase();
+            if ("give".equals(subCommand)) {
+                handleGiveEffect(args);
+            } else if ("clear".equals(subCommand)) {
+                handleClearEffect(args);
+            } else if ("list".equals(subCommand)) {
+                handleListEffects();
+            } else {
+                correctUsage();
+            }
+        });
     }
 
 
-    private int clearEffects(CommandContext<FabricClientCommandSource> context) {
-        FabricClientCommandSource source = context.getSource();
-        if (source.getPlayer() != null) {
+    private void correctUsage() {
+        sendFeedback(INFO_PREFIX + "Correct usage:\n"
+                + "   §7!clienteffect give [effect] <value>\n"
+                + "   §7!clienteffect clear [effect]\n"
+                + "   §7!clienteffect list");
+    }
+
+
+    private void handleListEffects() {
+        if (EFFECT_MAP.isEmpty()) {
+            sendFeedback(INFO_PREFIX + "No effects found.");
+            return;
+        }
+
+        StringBuilder effectsList = new StringBuilder(INFO_PREFIX + "Available Effects:\n");
+        EFFECT_MAP.keySet().stream()
+                .sorted() // Sort effects alphabetically
+                .forEach(effectName -> effectsList.append("   §7").append(effectName).append("\n"));
+
+        sendFeedback(effectsList.toString());
+    }
+
+
+
+    private void handleGiveEffect(String[] args) {
+        if (args.length < 3) {
+            sendFeedback(WARNING_PREFIX + "Usage: §7!clienteffect give [effect] <value>");
+            return;
+        }
+
+        String effectName = args[1].toLowerCase();
+        int value;
+
+        try {
+            value = Integer.parseInt(args[2]);
+        } catch (NumberFormatException e) {
+            sendFeedback(ERROR_PREFIX + "§cInvalid value. Please enter a valid integer.");
+            return;
+        }
+
+        RegistryEntry<StatusEffect> entry = EFFECT_MAP.get(effectName);
+        if (entry != null) {
+            applyEffect(entry, value, effectName);
+        } else {
+            sendFeedback(WARNING_PREFIX + "§6Invalid effect name");
+        }
+    }
+
+    private void handleClearEffect(String[] args) {
+        if (args.length == 1) {
+            clearAllEffects();
+        } else {
+            String effectName = args[1].toLowerCase();
+            RegistryEntry<StatusEffect> entry = EFFECT_MAP.get(effectName);
+            if (entry != null) {
+                removeEffect(entry, effectName);
+            } else {
+                sendFeedback(WARNING_PREFIX + "§6Invalid effect name");
+            }
+        }
+    }
+
+    private void applyEffect(RegistryEntry<StatusEffect> entry, int value, String effectName) {
+        if (value < 1 || value > 255) {
+            sendFeedback(WARNING_PREFIX + "Value must be between 1 and 255.");
+            return;
+        }
+
+        int amplifier = (value - 1) / 2;
+
+        if (MinecraftClient.getInstance().player != null) {
+            MinecraftClient.getInstance().player.addStatusEffect(new StatusEffectInstance(entry, 600, amplifier));
+            sendFeedback(String.format(INFO_PREFIX + "Effect §a%s §7has been set to §2%s§7",
+                    formatEffectName(effectName), value));
+        } else {
+            sendFeedback(ERROR_PREFIX + "§cAn Error occurred.");
+        }
+    }
+
+    private void removeEffect(RegistryEntry<StatusEffect> entry, String effectName) {
+        if (MinecraftClient.getInstance().player != null) {
+            MinecraftClient.getInstance().player.removeStatusEffect(entry);
+            sendFeedback(String.format(INFO_PREFIX + "Effect §a%s §7has been cleared", formatEffectName(effectName)));
+        } else {
+            sendFeedback(ERROR_PREFIX + "§cAn Error occurred.");
+        }
+    }
+
+    private void clearAllEffects() {
+        if (MinecraftClient.getInstance().player != null) {
             for (RegistryEntry<StatusEffect> entry : EFFECT_MAP.values()) {
-                source.getPlayer().removeStatusEffect(entry);
+                MinecraftClient.getInstance().player.removeStatusEffect(entry);
             }
-            source.sendFeedback(Text.literal(INFO_PREFIX + "All effects have been cleared"));
+            sendFeedback(INFO_PREFIX + "All effects have been cleared");
         } else {
-            source.sendFeedback(Text.literal(ERROR_PREFIX + "§cAn Error occurred"));
+            sendFeedback(ERROR_PREFIX + "§cAn Error occurred.");
         }
-        return 1;
     }
 
-    private int clearSpecificEffect(CommandContext<FabricClientCommandSource> context) {
-        FabricClientCommandSource source = context.getSource();
-        if (source.getPlayer() != null) {
-            String effectName = StringArgumentType.getString(context, "effect").toLowerCase();
-            RegistryEntry<StatusEffect> entry = EFFECT_MAP.get(effectName);
-            if (entry != null) {
-                source.getPlayer().removeStatusEffect(entry);
-                source.sendFeedback(Text.literal(String.format(INFO_PREFIX + "Effect §a%s §7has been cleared", formatEffectName(effectName))));
-            } else {
-                source.sendFeedback(Text.literal(WARNING_PREFIX + "§6Invalid effect name"));
-            }
-        } else {
-            source.sendFeedback(Text.literal(ERROR_PREFIX + "§cAn Error occurred"));
+    private void sendFeedback(String message) {
+        if (MinecraftClient.getInstance().player != null) {
+            MinecraftClient.getInstance().player.sendMessage(Text.of(message), false);
         }
-        return 1;
-    }
-
-    private int setEffect(CommandContext<FabricClientCommandSource> context) {
-        FabricClientCommandSource source = context.getSource();
-        if (source.getPlayer() != null) {
-            String effectName = StringArgumentType.getString(context, "effect").toLowerCase();
-            int value = IntegerArgumentType.getInteger(context, "value");
-
-            RegistryEntry<StatusEffect> entry = EFFECT_MAP.get(effectName);
-            if (entry != null) {
-                source.getPlayer().removeStatusEffect(entry);
-
-                int amplifier = (value - 1) / 2;
-                source.getPlayer().addStatusEffect(new StatusEffectInstance(entry, 600, amplifier));
-                source.sendFeedback(Text.literal(String.format(INFO_PREFIX + "Effect §a%s §7has been set to §2%s§7", formatEffectName(effectName), value)));
-            } else {
-                source.sendFeedback(Text.literal(WARNING_PREFIX + "§6Invalid effect name"));
-            }
-        } else {
-            source.sendFeedback(Text.literal(ERROR_PREFIX + "§cAn Error occurred"));
-        }
-        return 1;
     }
 
     private String formatEffectName(String input) {

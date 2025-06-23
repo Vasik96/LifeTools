@@ -1,16 +1,16 @@
 package com.lifetools.util;
 
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 
 import static com.lifetools.LifeTools.INFO_PREFIX;
+import static com.lifetools.util.Utility.sendFeedback;
 
 public class GamemodeSwitcher {
 
     private static final MinecraftClient client = MinecraftClient.getInstance();
 
-    public void handleGamemodeSwitch(FabricClientCommandSource source, String mode) {
+    public void handleGamemodeSwitch(String mode) {
         String gamemode;
 
         switch (mode.toLowerCase()) {
@@ -43,7 +43,7 @@ public class GamemodeSwitcher {
                 gamemode = "spectator";
                 break;
             default:
-                source.sendFeedback(Text.literal(INFO_PREFIX + "Invalid gamemode"));
+                sendFeedback(Text.literal(INFO_PREFIX + "Invalid gamemode"));
                 return;
         }
 
