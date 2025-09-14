@@ -9,6 +9,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.command.CommandSource;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -46,7 +47,7 @@ public abstract class ChatInputSuggestorMixin {
     private boolean updatingTextField = false;
     @Shadow
     @Nullable
-    private ParseResults<CommandSource> parse;
+    private ParseResults<ClientCommandSource> parse;
 
     @Shadow
     @Nullable
@@ -92,9 +93,11 @@ public abstract class ChatInputSuggestorMixin {
             if (this.parse == null || !this.parse.getReader().getString().equals(currentInput)) {
                 StringReader stringReader = new StringReader(currentInput);
                 assert this.client.player != null;
-                CommandDispatcher<CommandSource> dispatcher = this.client.player.networkHandler.getCommandDispatcher();
+                // Use the client dispatcher type
+                CommandDispatcher<ClientCommandSource> dispatcher = this.client.player.networkHandler.getCommandDispatcher();
                 this.parse = dispatcher.parse(stringReader, this.client.player.networkHandler.getCommandSource());
             }
+
 
             // Fetch custom suggestions
             Collection<String> suggestions = LifeToolsCmd.getSuggestions(partialCommand);

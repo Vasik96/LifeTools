@@ -17,7 +17,7 @@ import static com.lifetools.Xray.xrayEnabled;
 public class MixinBlock {
 
     @Inject(at = @At("RETURN"), method = "shouldDrawSide", cancellable = true)
-    private static void shouldDrawSide(BlockState state, BlockView reader, BlockPos pos, Direction face, BlockPos otherPos, CallbackInfoReturnable<Boolean> ci) {
+    private static void shouldDrawSide(BlockState state, BlockState adjacent, Direction face, CallbackInfoReturnable<Boolean> ci) {
         if (xrayEnabled) {
             if (XrayList.isXrayBlock(state.getBlock())) {
                 ci.setReturnValue(true);

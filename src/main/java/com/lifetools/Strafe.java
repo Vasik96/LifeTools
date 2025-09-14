@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.Vec2f;
 import org.joml.Vector2d;
 
 import static com.lifetools.LifeTools.INFO_PREFIX;
@@ -89,8 +90,9 @@ public class Strafe implements ClientModInitializer {
 
 
     private Vector2d transformStrafe(double speed, ClientPlayerEntity player) {
-        float forward = player.input.movementForward;
-        float side = player.input.movementSideways;
+        Vec2f movement = player.input.getMovementInput();
+        float forward = movement.y;   // forward/backward
+        float side = movement.x;
         float yaw = player.getYaw();
 
         double velX, velZ;
@@ -124,12 +126,12 @@ public class Strafe implements ClientModInitializer {
     }
 
     private boolean isMoving(ClientPlayerEntity player) {
-        return player.input.movementForward != 0 || player.input.movementSideways != 0;
+        return player.input.getMovementInput().y != 0 || player.input.getMovementInput().x != 0;
     }
 
     private void calculateDistance() {
         if (mc.player != null) {
-            distance = Math.sqrt((mc.player.getX() - mc.player.prevX) * (mc.player.getX() - mc.player.prevX) + (mc.player.getZ() - mc.player.prevZ) * (mc.player.getZ() - mc.player.prevZ));
+            distance = Math.sqrt((mc.player.getX() - mc.player.lastX) * (mc.player.getX() - mc.player.lastX) + (mc.player.getZ() - mc.player.lastZ) * (mc.player.getZ() - mc.player.lastZ));
         }
     }
 }

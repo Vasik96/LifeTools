@@ -1,11 +1,17 @@
 package com.lifetools;
 
 import com.lifetools.commandsystem.LifeToolsCmd;
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.PolygonMode;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -13,21 +19,63 @@ import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.mob.BreezeEntity;
 import net.minecraft.entity.mob.ElderGuardianEntity;
+import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.render.RenderLayer.MultiPhaseParameters;
+import net.minecraft.client.render.RenderPhase;
+import org.lwjgl.opengl.GL11;
+
+import java.util.Optional;
+import java.util.OptionalDouble;
 
 import static com.lifetools.LifeTools.INFO_PREFIX;
+import static net.minecraft.client.gl.RenderPipelines.GLOBALS_SNIPPET;
+import static net.minecraft.client.gl.RenderPipelines.TRANSFORMS_PROJECTION_FOG_SNIPPET;
 
 
 public class ESP implements ClientModInitializer {
 
     public static boolean isEspEnabled = false; // Track ESP state
 
+    // First, get the standard LINES pipeline shaders
+    static Identifier vs = RenderPipelines.LINES.getVertexShader();
+    static Identifier fs = RenderPipelines.LINES.getFragmentShader();
+    static Identifier LINES_NO_DEPTH_ID = Identifier.of("lifetools", "lines_no_depth");
+
+    // Build a new pipeline
+    static RenderPipeline.Snippet RENDERTYPE_LINES_SNIPPET = RenderPipeline.builder(
+                    TRANSFORMS_PROJECTION_FOG_SNIPPET,
+                    GLOBALS_SNIPPET)
+            .withVertexShader(vs)
+            .withFragmentShader(fs)
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST) // render through walls
+            .withCull(false)
+            .withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.DEBUG_LINES) // debug lines = consistent lines always, no normals
+            .buildSnippet();
+
+    private static final RenderLayer ESP_LINES = RenderLayer.of(
+            "lifetools:esp_lines",
+            256,
+            RenderPipeline.builder(RENDERTYPE_LINES_SNIPPET).withLocation(LINES_NO_DEPTH_ID).build(),
+            RenderLayer.MultiPhaseParameters.builder()
+                    .target(RenderPhase.Target.MAIN_TARGET)
+                    .lineWidth(RenderPhase.LineWidth.FULL_LINE_WIDTH)
+                    .layering(RenderPhase.Layering.NO_LAYERING)
+                    .build(false)
+    );
+
+
+
     @Override
     public void onInitializeClient() {
         registerCommands();
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(ESP::renderESPBoxes);
+        WorldRenderEvents.BEFORE_ENTITIES.register(ESP::renderESPBoxes);
     }
 
     private void registerCommands() {
@@ -52,123 +100,94 @@ public class ESP implements ClientModInitializer {
 
         MatrixStack matrices = context.matrixStack();
         Camera camera = context.camera();
-
-        if (matrices == null || camera == null) return; // Prevent NullPointerException
+        if (matrices == null || camera == null) return;
 
         matrices.push();
 
         MinecraftClient client = MinecraftClient.getInstance();
         assert client.world != null;
 
-
-        float tickDelta = client.getRenderTickCounter().getTickDelta(true);
+        float tickDelta = client.getRenderTickCounter().getTickProgress(true);
+        VertexConsumerProvider.Immediate vcp = client.getBufferBuilders().getEntityVertexConsumers();
+        //RenderLayer layer = RenderLayer.getLines();
 
         client.world.getEntities().forEach(entity -> {
             if (entity == null) return;
+            if (!(entity instanceof EnderDragonEntity) &&
+                    !(entity instanceof WitherEntity) &&
+                    !(entity instanceof PlayerEntity) &&
+                    !(entity instanceof ElderGuardianEntity) &&
+                    !(entity instanceof SlimeEntity) &&
+                    !(entity instanceof BreezeEntity)) return;
 
-            if (
-                            !(entity instanceof EnderDragonEntity) &&
-                            !(entity instanceof WitherEntity) &&
-                            !(entity instanceof PlayerEntity) && // this also includes otherplayerentity and clientplayerentity
-                            !(entity instanceof ElderGuardianEntity) &&
-                            !(entity instanceof BreezeEntity)) {
-                return; // Return if the entity is not one of the specified types
-            }
-
-            // Skip the local player (or other entities you don't want)
             if (entity == client.player) return;
 
-            // Get entity position with interpolation for smoother movement
-            double prevX = entity.prevX;
-            double prevY = entity.prevY;
-            double prevZ = entity.prevZ;
+            // Interpolated position
+            double x = entity.lastX + (entity.getX() - entity.lastX) * tickDelta;
+            double y = entity.lastY + (entity.getY() - entity.lastY) * tickDelta;
+            double z = entity.lastZ + (entity.getZ() - entity.lastZ) * tickDelta;
 
-            // Interpolate entity's position based on tickDelta
-            double interpolatedX = prevX + (entity.getX() - prevX) * tickDelta;
-            double interpolatedY = prevY + (entity.getY() - prevY) * tickDelta;
-            double interpolatedZ = prevZ + (entity.getZ() - prevZ) * tickDelta;
-
-            // Apply the correct transformations for the entity's position
             matrices.push();
-            RenderSystem.disableDepthTest();
+            matrices.translate(x - camera.getPos().x, y - camera.getPos().y, z - camera.getPos().z);
 
-            matrices.translate(interpolatedX - camera.getPos().x, interpolatedY - camera.getPos().y, interpolatedZ - camera.getPos().z);
+            Matrix4f matrix = matrices.peek().getPositionMatrix();
+            VertexConsumer buffer = vcp.getBuffer(ESP_LINES);
 
-            // Get position matrix for rendering
-            Matrix4f positionMatrix = matrices.peek().getPositionMatrix();
+            var box = entity.getBoundingBox();
+            float hw = (float) (box.getLengthX() / 2.0);
+            float hh = (float) box.getLengthY();
+            float hd = (float) (box.getLengthZ() / 2.0);
 
-            // Initialize Tessellator and BufferBuilder for line strip (outline)
-            Tessellator tessellator = Tessellator.getInstance();
-            BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+            int r = 255, g = 255, b = 255;
 
-            var boundingBox = entity.getBoundingBox();
+            // Draw edges as lines (12 edges)
+            // Front face
 
-            // Define cube edges for the outline (green edges)
-            float halfWidth = (float) (boundingBox.getLengthX() / 2.0);  // Half of the box's width
-            float height = (float) boundingBox.getLengthY();
+            buffer.vertex(matrix, -hw, 0, -hd).color(r, g, b, 255);
+            buffer.vertex(matrix, hw, 0, -hd).color(r, g, b, 255);
 
-            final int red = 255;
-            final int green = 255;
-            final int blue = 255;
+            buffer.vertex(matrix, hw, 0, -hd).color(r, g, b, 255);
+            buffer.vertex(matrix, hw, hh, -hd).color(r, g, b, 255);
 
-            // Define the 12 edges of the cube (using line strips)
-            // Front face edges
-            buffer.vertex(positionMatrix, -halfWidth, 0, -halfWidth).color(red, green, blue, 255);  // Front bottom-left
-            buffer.vertex(positionMatrix, halfWidth, 0, -halfWidth).color(red, green, blue, 255);   // Front bottom-right
+            buffer.vertex(matrix, hw, hh, -hd).color(r, g, b, 255);
+            buffer.vertex(matrix, -hw, hh, -hd).color(r, g, b, 255);
 
-            buffer.vertex(positionMatrix, halfWidth, 0, -halfWidth).color(red, green, blue, 255);   // Front bottom-right
-            buffer.vertex(positionMatrix, halfWidth, height, -halfWidth).color(red, green, blue, 255); // Front top-right
+            buffer.vertex(matrix, -hw, hh, -hd).color(r, g, b, 255);
+            buffer.vertex(matrix, -hw, 0, -hd).color(r, g, b, 255);
 
-            buffer.vertex(positionMatrix, halfWidth, height, -halfWidth).color(red, green, blue, 255); // Front top-right
-            buffer.vertex(positionMatrix, -halfWidth, height, -halfWidth).color(red, green, blue, 255); // Front top-left
+            // Back face
+            buffer.vertex(matrix, -hw, 0, hd).color(r, g, b, 255);
+            buffer.vertex(matrix, hw, 0, hd).color(r, g, b, 255);
 
-            buffer.vertex(positionMatrix, -halfWidth, height, -halfWidth).color(red, green, blue, 255); // Front top-left
-            buffer.vertex(positionMatrix, -halfWidth, 0, -halfWidth).color(red, green, blue, 255);  // Front bottom-left
+            buffer.vertex(matrix, hw, 0, hd).color(r, g, b, 255);
+            buffer.vertex(matrix, hw, hh, hd).color(r, g, b, 255);
 
-// Back face edges
-            buffer.vertex(positionMatrix, -halfWidth, 0, halfWidth).color(red, green, blue, 255);  // Back bottom-left
-            buffer.vertex(positionMatrix, halfWidth, 0, halfWidth).color(red, green, blue, 255);   // Back bottom-right
+            buffer.vertex(matrix, hw, hh, hd).color(r, g, b, 255);
+            buffer.vertex(matrix, -hw, hh, hd).color(r, g, b, 255);
 
-            buffer.vertex(positionMatrix, halfWidth, 0, halfWidth).color(red, green, blue, 255);   // Back bottom-right
-            buffer.vertex(positionMatrix, halfWidth, height, halfWidth).color(red, green, blue, 255); // Back top-right
+            buffer.vertex(matrix, -hw, hh, hd).color(r, g, b, 255);
+            buffer.vertex(matrix, -hw, 0, hd).color(r, g, b, 255);
 
-            buffer.vertex(positionMatrix, halfWidth, height, halfWidth).color(red, green, blue, 255); // Back top-right
-            buffer.vertex(positionMatrix, -halfWidth, height, halfWidth).color(red, green, blue, 255); // Back top-left
+            // Vertical edges
+            buffer.vertex(matrix, -hw, 0, -hd).color(r, g, b, 255);
+            buffer.vertex(matrix, -hw, 0, hd).color(r, g, b, 255);
 
-            buffer.vertex(positionMatrix, -halfWidth, height, halfWidth).color(red, green, blue, 255); // Back top-left
-            buffer.vertex(positionMatrix, -halfWidth, 0, halfWidth).color(red, green, blue, 255);  // Back bottom-left
+            buffer.vertex(matrix, hw, 0, -hd).color(r, g, b, 255);
+            buffer.vertex(matrix, hw, 0, hd).color(r, g, b, 255);
 
-// Vertical edges connecting front and back faces
-            buffer.vertex(positionMatrix, -halfWidth, 0, -halfWidth).color(red, green, blue, 255);  // Front bottom-left
-            buffer.vertex(positionMatrix, -halfWidth, 0, halfWidth).color(red, green, blue, 255);   // Back bottom-left
+            buffer.vertex(matrix, -hw, hh, -hd).color(r, g, b, 255);
+            buffer.vertex(matrix, -hw, hh, hd).color(r, g, b, 255);
 
-            buffer.vertex(positionMatrix, halfWidth, 0, -halfWidth).color(red, green, blue, 255);   // Front bottom-right
-            buffer.vertex(positionMatrix, halfWidth, 0, halfWidth).color(red, green, blue, 255);    // Back bottom-right
+            buffer.vertex(matrix, hw, hh, -hd).color(r, g, b, 255);
+            buffer.vertex(matrix, hw, hh, hd).color(r, g, b, 255);
 
-            buffer.vertex(positionMatrix, -halfWidth, height, -halfWidth).color(red, green, blue, 255); // Front top-left
-            buffer.vertex(positionMatrix, -halfWidth, height, halfWidth).color(red, green, blue, 255);  // Back top-left
-
-            buffer.vertex(positionMatrix, halfWidth, height, -halfWidth).color(red, green, blue, 255); // Front top-right
-            buffer.vertex(positionMatrix, halfWidth, height, halfWidth).color(red, green, blue, 255);  // Back top-right
-
-            // Finalizing and rendering the lines
-            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-            RenderSystem.setShaderColor((float) red, (float) green, (float) blue, 1.0F); // Green color for the cube edges
-
-            // Draw the cube
-            BufferRenderer.drawWithGlobalProgram(buffer.end());
-
-            // Reset the shader color to avoid affecting other rendering operations
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
-            matrices.pop(); // Restore previous matrix state after rendering
+            matrices.pop();
         });
 
-        matrices.pop(); // Restore original matrix state after the loop
-        RenderSystem.enableDepthTest();
+        // Draw all wireframes at once
+        vcp.draw(ESP_LINES);
+
+        matrices.pop();
     }
-
-
-
 
 }

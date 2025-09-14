@@ -12,7 +12,8 @@ public class TeleportPacket {
                 targetPosition.x,
                 targetPosition.y,
                 targetPosition.z,
-                isOnGround
+                isOnGround,
+                false
         );
         connection.send(packet);
     }

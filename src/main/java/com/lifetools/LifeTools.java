@@ -28,7 +28,7 @@ public class LifeTools implements ClientModInitializer {
     public static final String WARNING_PREFIX = "§8[§eWarning§8] §7";
 
     public static boolean menu_shown = true;
-    String gameVersion = MinecraftVersion.create().getName();
+    String gameVersion = MinecraftVersion.create().id();
 
     @Override
     public void onInitializeClient() {

@@ -13,6 +13,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.math.Vec3d;
 
 import static com.lifetools.LifeTools.INFO_PREFIX;
 
@@ -81,11 +82,22 @@ public class Criticals implements ClientModInitializer {
 
     private void sendFakeY(double offset, boolean onGround) {
         assert MC.player != null;
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(
+
+        // Create a new Vec3d for the position
+        Vec3d position = new Vec3d(
                 MC.player.getX(),
                 MC.player.getY() + offset,
-                MC.player.getZ(),
-                onGround
-        ));
+                MC.player.getZ()
+        );
+
+        // Create the packet with the position, onGround status, and horizontalCollision flag
+        PlayerMoveC2SPacket packet = new PlayerMoveC2SPacket.PositionAndOnGround(
+                position,
+                onGround,
+                false // Assuming no horizontal collision for this example
+        );
+
+        // Send the packet
+        MC.player.networkHandler.sendPacket(packet);
     }
 }

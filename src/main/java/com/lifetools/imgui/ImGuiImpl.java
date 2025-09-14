@@ -5,11 +5,19 @@
 package com.lifetools.imgui;
 
 import com.lifetools.imgui.RenderInterface;
+import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import imgui.*;
 import imgui.extension.implot.ImPlot;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.GlBackend;
+import net.minecraft.client.texture.GlTexture;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 
 public class ImGuiImpl {
     private final static ImGuiImplGlfw imGuiImplGlfw = new ImGuiImplGlfw();
@@ -61,18 +69,26 @@ public class ImGuiImpl {
         imGuiImplGl3.init();
     }
 
-    public static void draw(final RenderInterface runnable) {
+    public static void draw(final RenderInterface renderInterface) {
+        // Minecraft will not bind the framebuffer unless it is needed, so do it manually and hope Vulcan never gets real:tm:
+        final Framebuffer framebuffer = MinecraftClient.getInstance().getFramebuffer();
+        final int previousFramebuffer = ((GlTexture) framebuffer.getColorAttachment()).getOrCreateFramebuffer(((GlBackend) RenderSystem.getDevice()).getBufferManager(), null);
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, previousFramebuffer);
+        GL11.glViewport(0, 0, framebuffer.viewportWidth, framebuffer.viewportHeight);
+
         // start frame
         imGuiImplGl3.newFrame();
         imGuiImplGlfw.newFrame(); // Handle keyboard and mouse interactions
         ImGui.newFrame();
 
         // do rendering logic
-        runnable.render(ImGui.getIO());
+        renderInterface.render(ImGui.getIO());
 
         // end frame
         ImGui.render();
         imGuiImplGl3.renderDrawData(ImGui.getDrawData());
+
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, previousFramebuffer);
 
 // Add this code if you have enabled Viewports in the create method
 //        if (ImGui.getIO().hasConfigFlags(ImGuiConfigFlags.ViewportsEnable)) {

@@ -1,11 +1,14 @@
 package com.lifetools.util;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
@@ -28,8 +31,8 @@ public class Launch {
             World world = player.getWorld();
 
             // Define launch distance
-            double forwardDistance = 0.4;
-            double upwardDistance = 0.3;
+            double forwardDistance = 3.0;
+            double upwardDistance = 1.5;
 
             // Calculate motion
             double xMotion = player.getRotationVector().x * forwardDistance;
@@ -38,26 +41,9 @@ public class Launch {
             // Apply motion
             player.setVelocity(xMotion, upwardDistance, zMotion);
             player.sendMessage(Text.literal(INFO_PREFIX + "Launched!"), false);
-
-            // Create explosion effect
-            createExplosion(world, player.getPos());
         } else {
             sendFeedback(Text.literal(INFO_PREFIX + "Player not found."));
         }
     }
 
-    public void createExplosion(World world, Vec3d pos) {
-        AdvancedExplosionBehavior explosionBehavior = new AdvancedExplosionBehavior(
-                true, false,
-                Optional.of(1.22F),
-                Registries.BLOCK.getEntryList(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS).map(Function.identity())
-        );
-
-        world.createExplosion(
-                null, null, explosionBehavior,
-                pos.getX(), pos.getY(), pos.getZ(),
-                1.2F, false, World.ExplosionSourceType.TRIGGER,
-                ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.ENTITY_WIND_CHARGE_WIND_BURST
-        );
-    }
 }

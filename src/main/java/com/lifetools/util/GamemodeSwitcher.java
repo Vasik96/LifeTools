@@ -49,7 +49,7 @@ public class GamemodeSwitcher {
 
         if (client.player != null) {
             // Send the command to change gamemode
-            client.player.networkHandler.sendCommand("gamemode " + gamemode);
+            client.player.networkHandler.sendChatCommand("gamemode " + gamemode);
         }
     }
 }

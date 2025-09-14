@@ -53,7 +53,7 @@ public class NoFall implements ClientModInitializer {
         if (noFallEnabled && client.player != null) {
             // Send the packet to cancel fall damage
             ClientPlayerEntity player = client.player;
-            player.networkHandler.sendPacket(new PlayerMoveC2SPacket.OnGroundOnly(true));
+            player.networkHandler.sendPacket(new PlayerMoveC2SPacket.OnGroundOnly(true, false));
             player.fallDistance = 0; // Reset fall distance to prevent fall damage
         }
     }

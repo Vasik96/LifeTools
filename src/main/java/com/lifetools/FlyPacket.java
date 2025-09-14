@@ -11,12 +11,11 @@ public class FlyPacket {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player != null) {
             boolean onGround = client.player.isOnGround();
-            PlayerMoveC2SPacket.PositionAndOnGround packet = new PlayerMoveC2SPacket.PositionAndOnGround(
-                    pos.getX(), pos.getY(), pos.getZ(), onGround
-            );
-
-
+            boolean horizontalCollision = client.player.horizontalCollision; // Retrieve the horizontal collision status
+            PlayerMoveC2SPacket.PositionAndOnGround packet = new PlayerMoveC2SPacket.PositionAndOnGround(pos, onGround, horizontalCollision);
             client.player.networkHandler.sendPacket(packet);
         }
     }
+
+
 }

@@ -26,7 +26,7 @@ public class Reach implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (MinecraftClient.getInstance().player != null && reachToggled) {
                 // Set the player's interaction range to the toggled value
-                Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE))
+                Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.ENTITY_INTERACTION_RANGE))
                         .setBaseValue(TOGGLED_REACH);
             }
         });
@@ -48,12 +48,12 @@ public class Reach implements ClientModInitializer {
 
         if (reachToggled) {
             // Set the player's interaction range to the toggled value
-            Objects.requireNonNull(client.player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE))
+            Objects.requireNonNull(client.player.getAttributeInstance(EntityAttributes.ENTITY_INTERACTION_RANGE))
                     .setBaseValue(TOGGLED_REACH);
             client.player.sendMessage(Text.of(INFO_PREFIX + "Reach has been §aenabled§7 - Note that this feature is limited to the server's configuration"), false);
         } else {
             // Reset the player's interaction range to the default value
-            Objects.requireNonNull(client.player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE))
+            Objects.requireNonNull(client.player.getAttributeInstance(EntityAttributes.ENTITY_INTERACTION_RANGE))
                     .setBaseValue(DEFAULT_REACH);
             client.player.sendMessage(Text.of(INFO_PREFIX + "Reach has been §cdisabled"), false);
         }

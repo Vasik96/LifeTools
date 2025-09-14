@@ -1,6 +1,7 @@
 package com.lifetools.mixins;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.DisconnectedScreen;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
@@ -11,6 +12,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import static com.lifetools.util.Disconnect.reason;
 
 @Mixin(GameMenuScreen.class)
 abstract class GameMenuScreenMixin extends Screen {
@@ -39,7 +42,7 @@ abstract class GameMenuScreenMixin extends Screen {
                             if (client.currentScreen instanceof MultiplayerScreen) {
                                 if (client.player == null) {
                                     // Player is null, disconnect from server and return to the TitleScreen
-                                    client.disconnect();
+                                    client.disconnect(new DisconnectedScreen(null, title, Text.of(reason)), false);
                                     client.setScreen(new TitleScreen());
                                 } else if (client.currentScreen == parentScreen) {
                                     client.setScreen(parentScreen);

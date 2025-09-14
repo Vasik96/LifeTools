@@ -38,7 +38,7 @@ public class Speed implements ClientModInitializer {
         // Continuously set the player's speed if it was changed
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (MinecraftClient.getInstance().player != null && speedChanged) {
-                Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).setBaseValue(scaledSpeed);
+                Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED)).setBaseValue(scaledSpeed);
             }
         });
     }
@@ -53,13 +53,13 @@ public class Speed implements ClientModInitializer {
 
         if (!speedChanged) {
             // Store the player's original speed before any changes
-            storedSpeed = (float) Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).getBaseValue();
+            storedSpeed = (float) Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED)).getBaseValue();
         }
 
         scaledSpeed = newSpeed / 20.0f * 0.95f + 0.05f;
 
         // Set the player's movement speed attributes
-        Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).setBaseValue(scaledSpeed);
+        Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED)).setBaseValue(scaledSpeed);
 
         sendInfoMessage("Walking speed has been set to §a" + newSpeed);
         speedChanged = true;
@@ -69,7 +69,7 @@ public class Speed implements ClientModInitializer {
         assert MinecraftClient.getInstance().player != null;
 
         // Reset to the original stored speed
-        Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)).setBaseValue(storedSpeed);
+        Objects.requireNonNull(MinecraftClient.getInstance().player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED)).setBaseValue(storedSpeed);
         speedChanged = false;
 
         sendInfoMessage("Walking speed has been reset");

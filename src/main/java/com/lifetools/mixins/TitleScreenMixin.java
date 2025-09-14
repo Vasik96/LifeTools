@@ -19,7 +19,7 @@ public abstract class TitleScreenMixin extends Screen {
         super(title);
     }
 
-    @Inject(method = "initWidgetsNormal", at = @At("RETURN"))
+    @Inject(method = "init", at = @At("RETURN"))
     private void addQuickConnectButton(CallbackInfo ci) {
         int buttonHeight = 20;
         int spacing = 5;
